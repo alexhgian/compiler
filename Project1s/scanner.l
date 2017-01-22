@@ -62,6 +62,7 @@ digit     [0-9]
 FLOAT     ([0-9]+"."[0-9]*[fF]?)
 
 
+%s N
 %x ML_COMMENT
 %%             /* BEGIN RULES SECTION */
  /* All patterns and actions should be placed between the start and stop
@@ -107,13 +108,24 @@ void	   {return T_Void;}
 "uvec4"    { return T_Uvec4; }
 "struct"   { return T_Struct; }
 
-[0-9]+                        { yylval.integerConstant = strtol(yytext, NULL, 10); 
-					return T_IntConstant; }
+
+
+<*>" "  		        { }
+<*>\t      		      { yylloc.last_column += 7; }
+<*>\n      		      { ++currentLineNum; currentColNum = 0; }
+
+
+[0-9]+                        { yylval.integerConstant = strtol(yytext, NULL, 10);return T_IntConstant; }
 "true"                        { yylval.boolConstant = 1; return T_BoolConstant;}
 "false"                       { yylval.boolConstant = 0; return T_BoolConstant;}
-{FLOAT}             	      { yylval.floatConstant = atof(yytext); return T_FloatConstant; }
+{FLOAT}             	        { yylval.floatConstant = atof(yytext); return T_FloatConstant; }
 [a-zA-Z]([a-zA-Z0-9])*        { strcpy(yylval.identifier, yytext); return T_Identifier;}
 
+"/*"                 { BEGIN(ML_COMMENT); }
+<ML_COMMENT>"*/"     { BEGIN(N); }
+<ML_COMMENT>.        { }
+<ML_COMMENT><<EOF>>  { ReportError::UntermComment(); return 0;}
+"//"[^\n]*           { }
 
 
 
