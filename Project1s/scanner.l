@@ -71,28 +71,11 @@ FLOAT     ([0-9]+"."[0-9]*[fF]?)
 
 [\n]		{currentLineNum++; currentColNum = 1;}
 
-void	   {return T_Void;}
-"const"    { return T_Const; }
-"uniform"  { return T_Uniform; }
-"break"    { return T_Break; }
-"continue" { return T_Continue; }
-"do"       { return T_Do; }
-"for"      { return T_For; }
-"while"    { return T_While; }
-"switch"   { return T_Switch; }
-"case"     { return T_Case; }
-"default"  { return T_Default; }
-"if"       { return T_If; }
-"else"     { return T_Else; }
-"return"   { return T_Return; }
-"in"       { return T_In; }
-"out"      { return T_Out; }
+void	     {return T_Void;}
+"bool"     { return T_Bool; }
 "float"    { return T_Float; }
 "int"      { return T_Int; }
-"bool"     { return T_Bool; }
-"mat2"     { return T_Mat2; }
-"mat3"     { return T_Mat3; }
-"mat4"     { return T_Mat4; }
+"uint"     { return T_Uint; }
 "vec2"     { return T_Vec2; }
 "vec3"     { return T_Vec3; }
 "vec4"     { return T_Vec4; }
@@ -102,23 +85,37 @@ void	   {return T_Void;}
 "bvec2"    { return T_Bvec2; }
 "bvec3"    { return T_Bvec3; }
 "bvec4"    { return T_Bvec4; }
-"uint"     { return T_Uint; }
 "uvec2"    { return T_Uvec2; }
 "uvec3"    { return T_Uvec3; }
 "uvec4"    { return T_Uvec4; }
+"mat2"     { return T_Mat2; }
+"mat3"     { return T_Mat3; }
+"mat4"     { return T_Mat4; }
 "struct"   { return T_Struct; }
+"in"       { return T_In; }
+"out"      { return T_Out; }
+"const"    { return T_Const; }
+"uniform"  { return T_Uniform; }
+"while"    { return T_While; }
+"break"    { return T_Break; }
+"continue" { return T_Continue; }
+"do"       { return T_Do; }
+"else"     { return T_Else; }
+"for"      { return T_For; }
+"if"       { return T_If; }
+"return"   { return T_Return; }
+"switch"   { return T_Switch; }
+"case"     { return T_Case; }
+"default"  { return T_Default; }
 
-
-
-<*>" "  		        { }
+<*>" "  		      { }
 <*>\t      		      { yylloc.last_column += 7; }
 <*>\n      		      { ++currentLineNum; currentColNum = 0; }
-
 
 [0-9]+                        { yylval.integerConstant = strtol(yytext, NULL, 10);return T_IntConstant; }
 "true"                        { yylval.boolConstant = 1; return T_BoolConstant;}
 "false"                       { yylval.boolConstant = 0; return T_BoolConstant;}
-{FLOAT}             	        { yylval.floatConstant = atof(yytext); return T_FloatConstant; }
+{FLOAT}             	      { yylval.floatConstant = atof(yytext); return T_FloatConstant; }
 [a-zA-Z]([a-zA-Z0-9])*        { strcpy(yylval.identifier, yytext); return T_Identifier;}
 
 "/*"                 { BEGIN(ML_COMMENT); }
@@ -127,31 +124,39 @@ void	   {return T_Void;}
 <ML_COMMENT><<EOF>>  { ReportError::UntermComment(); return 0;}
 "//"[^\n]*           { }
 
+"++"          { return T_Inc; }
+"--"          { return T_Dec; }
+"<=" 	      { return T_LessEqual; }
+">="          { return T_GreaterEqual; }
+"="           { return T_EQ; }
+"!="          { return T_NE; }
+"&&"          { return T_And; }
+"||"          { return T_Or; }
+"*=" 	      { return T_MulAssign; }
+"/="          { return T_DivAssign; }
+"+=" 	      { return T_AddAssign; }
+"-="          { return T_SubAssign; }
+"("           { return T_LeftParen; }
+")"           { return T_RightParen; }
+"["           { return T_LeftBracket; }
+"]"           { return T_RightBracket; }
+"{"           { return T_LeftBrace; }
+"}"           { return T_RightBrace; }
+"."           { return T_Dot; }
+":"           { return T_Colon;}
+"=="          { return T_Equal; }
+";"           { return T_Semicolon; }
+"-" 	      { return T_MulAssign; }
+"+"           { return T_DivAssign; }
+"*" 	      { return T_AddAssign; }
+"/"           { return T_SubAssign; }
+"<" 	      { return T_LeftAngle; }
+">"           { return T_RightAngle; }
+"?"           { return T_Question; }
 
 
-"+" 	     { return T_AddAssign; }
-"-"          { return T_SubAssign; }
-"*" 	     { return T_MulAssign; }
-"/"          { return T_DivAssign; }
-"<" 	     { return T_LeftAngle; }
-"<=" 	     { return T_LessEqual; }
-">"          { return T_RightAngle; }
-">="         { return T_GreaterEqual; }
-"="          { return T_EQ; }
-"=="         { return T_Equal; }
-"!="         { return T_NE; }
-"&&"         { return T_And; }
-"||"         { return T_Or; }
-";"          { return T_Semicolon; }
-"."          { return T_Dot; }
-"("          { return T_LeftParen; }
-")"          { return T_RightParen; }
-"["          { return T_LeftBracket; }
-"]"          { return T_RightBracket; }
-"{"          { return T_LeftBrace; }
-"}"          { return T_RightBrace; }
-"++"         { return T_Inc; }
-"--"         { return T_Dec; }
+.             { ReportError::UnrecogChar(&yylloc, yytext[0]); }
+
 
 
 %%
