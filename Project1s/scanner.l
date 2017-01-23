@@ -110,7 +110,7 @@ void	   {return T_Void;}
 <*>" "  		      { }
 <*>\t      		      { yylloc.last_column += 7; }
 <*>\n      		      { ++currentLineNum; currentColNum = 0; }
-
+[0-9]+u                        { yylval.integerConstant = strtol(yytext, NULL, 10);return T_UintConstant; }    
 [0-9]+                        { yylval.integerConstant = strtol(yytext, NULL, 10);return T_IntConstant; }
 "true"                        { yylval.boolConstant = 1; return T_BoolConstant;}
 "false"                       { yylval.boolConstant = 0; return T_BoolConstant;}
