@@ -1,8 +1,8 @@
 #!/bin/bash
 
-name=""
-pid=""
-email=""
+name="Alex Gian, Nazior Rahman"
+pid="A11544343_A11456525"
+email="agian@ucsd.edu, mnrahman@ucsd.edu"
 
 if [[ $name == "" ]]
 then 
