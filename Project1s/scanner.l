@@ -160,10 +160,8 @@ void	   {return T_Void;}
 "/"           { return T_Slash; }
 "<" 	      { return T_LeftAngle; }
 ">"           { return T_RightAngle; }
-"?"           { return T_Question; }
 
 
-.             { ReportError::UnrecogChar(&yylloc, yytext[0]); }
 
 
 
