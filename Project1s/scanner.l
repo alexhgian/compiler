@@ -47,7 +47,6 @@ static void DoBeforeEachAction();
 #define YY_USER_ACTION DoBeforeEachAction();
 
 int currentLineNum, currentColNum;
-
 %}
 
  /* The section before the first %% is the Definitions section of the lex
@@ -58,8 +57,8 @@ int currentLineNum, currentColNum;
   */
 
 BOOLEAN   (true|false)
-digit     [0-9]
-FLOAT     ([0-9]+"."[0-9]*[fF]?)
+FLOAT     ([0-9]*\.?[0-9]+([eE][0-9]+)?[fF]?)
+
 
 
 %s N
@@ -71,7 +70,7 @@ FLOAT     ([0-9]+"."[0-9]*[fF]?)
 
 [\n]		{currentLineNum++; currentColNum = 1;}
 
-void	     {return T_Void;}
+void	   {return T_Void;}
 "bool"     { return T_Bool; }
 "float"    { return T_Float; }
 "int"      { return T_Int; }
@@ -116,7 +115,16 @@ void	     {return T_Void;}
 "true"                        { yylval.boolConstant = 1; return T_BoolConstant;}
 "false"                       { yylval.boolConstant = 0; return T_BoolConstant;}
 {FLOAT}             	      { yylval.floatConstant = atof(yytext); return T_FloatConstant; }
-[a-zA-Z]([a-zA-Z0-9])*        { strcpy(yylval.identifier, yytext); return T_Identifier;}
+[a-zA-Z]([a-zA-Z0-9])*        { 
+                                if(yyleng > 1023 ) {
+				  ReportError::LongIdentifier(&yylloc, yytext);
+				  strncpy(yylval.identifier, yytext, MaxIdentLen);
+				 
+				 } else {
+				  strncpy(yylval.identifier, yytext, MaxIdentLen);
+				}
+			        return T_Identifier;
+                              }
 
 "/*"                 { BEGIN(ML_COMMENT); }
 <ML_COMMENT>"*/"     { BEGIN(N); }
@@ -146,10 +154,10 @@ void	     {return T_Void;}
 ":"           { return T_Colon;}
 "=="          { return T_Equal; }
 ";"           { return T_Semicolon; }
-"-" 	      { return T_MulAssign; }
-"+"           { return T_DivAssign; }
-"*" 	      { return T_AddAssign; }
-"/"           { return T_SubAssign; }
+"-" 	      { return T_Dash; }
+"+"           { return T_Plus; }
+"*" 	      { return T_Star; }
+"/"           { return T_Slash; }
 "<" 	      { return T_LeftAngle; }
 ">"           { return T_RightAngle; }
 "?"           { return T_Question; }
