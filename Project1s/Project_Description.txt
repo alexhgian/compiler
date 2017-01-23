@@ -1,0 +1,27 @@
+First off, we tried to match all the keywords with their corresponding tokens to make 
+sure we did not miss out any of the constants of operators
+
+1) Int: Integer is very simple, but while catching unsigned integer, we made sure after 
+the integer digit it is followed by u/U. It it hit the character u then we returned 
+the token unsigned int. 
+
+2) Float: for float we matched the regular expression for an the basic case for a unsigned 
+float. For instance, 123.56 and then we had to handle exponents which had to match e/E 
+with a follow value for the power, i.e 123e10. Also, a float can also be identified by 
+the postfix f/F at the end of the values, i.e 1234.5f.
+
+3) Comments : For Multiline comment, when reading the lexeme “/*”, our program made sure 
+it discard everything that appears after it while keeping track of the line and column 
+number it is in. For unterminated comment, our scanner recognizes “EOF” end-of-file token 
+before it closes and it throws an error. 
+
+4) Identifier We started off without a check for the maximum length of 1023 specified by 
+the GLSL documentation. After we verified that the T_identified in fact worked for a basic
+test case we then moved on to implementing a check for the maximum length and truncated at 
+31 characters. We used strncpy to copy the truncated identifier with the proper max length 
+of 31 so not to get a `Segmentation Fault`.
+
+5) Tests: then then ran all the test files to output files for both `p1exe` and then `glc` 
+which we then diffed to compare outputs. When we would encounter issues we would go back to 
+fix it according to difference. Furthermore, we also tried all the test files provided on 
+piazza to further confirm our implementation is right. 
