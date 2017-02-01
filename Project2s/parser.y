@@ -45,6 +45,64 @@ void yyerror(const char *msg); // standard error-handling routine
     char identifier[MaxIdentLen+1]; // +1 for terminating null
     Decl *decl;
     List<Decl*> *declList;
+
+    //ast.h
+    Node *node;
+    Identifier *ident;        
+    Error *error;
+
+    //ast_decl.h
+    VarDecl *varDecl;
+    List<VarDecl*> *varDeclList;
+    VarDeclError *varDeclError;
+    FnDecl *fnDecl;
+    FormalsError *formalsError;
+
+    //ast_expr.h
+    Expr *expr;
+    ExprError *exprError;
+    EmptyExpr *emptyExpr;
+    IntConstant *intConst;
+    FloatConstant *floatConst;
+    BoolConstant *boolConst;
+    Operator *operators;
+    CompoundExpr *compoundExpr;
+    ArithmeticExpr *arithmeticExpr;
+    RelationalExpr *relationalExpr;
+    EqualityExpr *equalityExpr;
+    LogicalExpr *logicalExpr;
+    SelectionExpr *selectionExpr;    //new shit
+    AssignExpr *assignExpr;
+    PostfixExpr *postfixExpr;
+    LValue *lValue;
+    ArrayAccess *arrayAccess;
+    FieldAccess *fieldAccess;
+    Call *call;
+    ActualsError *actualsError;
+    VarExpr *varExpr;              //new shit
+
+
+    //ast_stmt.h
+    Program *program;
+    Stmt *stmt;
+    StmtBlock *stmtBlock;
+    ConditionalStmt *conditionalStmt;
+    LoopStmt *loopStmt;
+    ForStmt *forStmt;
+    WhileStmt *whileStmt;
+    IfStmt *ifStmt;
+    IfStmtExprError *ifStmtExprError;
+    BreakStmt *breakStmt;
+    ReturnStmt *returnStmt;
+    SwitchLabel *switchLabel;
+    Case *cases;
+    Default *def;
+    SwitchStmt *switchStmt;
+
+    //ast_type.h
+    Type *type;
+    NamedType *namedType;
+    ArrayType *arrayType;
 }
 
 
