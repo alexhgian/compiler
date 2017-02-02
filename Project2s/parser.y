@@ -48,7 +48,7 @@ void yyerror(const char *msg); // standard error-handling routine
 
     //ast.h
     Node *node;
-    Identifier *ident;        
+    Identifier *ident;
     Error *error;
 
     //ast_decl.h
@@ -146,6 +146,8 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <declList>  DeclList
 %type <decl>      Decl
 
+%type <Identifier> variable_identifier
+%type <expr>    primary_expression
 
 
 %%
@@ -177,6 +179,119 @@ Decl      :    T_Int T_Identifier T_Semicolon {
                                                  $$ = new VarDecl(id, Type::intType);
                                               }
           ;
+
+
+variable_identifier 	:	T_Identifier         { $$ = new Identifier(@1,$1);};
+
+primary_expression 	:	variable_identifier	{/* Fill it */}
+		   	|	T_IntConstant		{}
+		   	|	T_FloatConstant		{}
+		   	|	T_BoolConstant		{}
+		   	|	T_LeftParen		{}
+		   	|	T_RightParen		{}
+			;
+
+postfix_expression	:	primary_expression	{/* Fill it */}
+			|	postfix_expression T_LeftBracket integer_expression T_RightBracket {}
+			| 	function_call
+			|	postfix_expression T_Dot  {/* Need to complete this expression */}
+			|	postfix_expression T_Inc {}
+			|	postfix_expression T_Dec {}
+			;
+
+integer_expression			:	expression {/* */};
+
+function_call				:	function_call_or_method {/* Need to finish */}
+
+function_call_or_method			:	function_call_generic  {};
+
+function_call_generic                	:	function_call_header_with_parameters T_RightParen {}
+                                     	|	function_call_header_no_parameters T_RightParen {}
+                                     	;
+
+function_call_header_no_parameters   	:	function_call_header T_Void  {}
+                                     	|	function_call_header  {}
+                                     	;
+
+function_call_header_with_parameters 	:	function_call_header assignment_expression {}
+                                     	| 	function_call_header_with_parameters ',' assignment_expression {}
+                                     	;
+
+function_call_header			: 	function_identifier T_LeftParen {};
+
+function_identifier                  	: 	/*type_specifier {} */
+                                     	| 	postfix_expression {}
+                                     	;
+
+unary_expression                     	: 	postfix_expression {}
+                                     	| 	T_Inc unary_expression {}
+                                     	| 	T_Dec unary_expression {}
+                                     	| 	unary_operator unary_expression {}
+                                     	;
+
+unary_operator                      	:	T_Plus {}
+                                    	|	T_Dash {}
+                                    	;
+
+multiplicative_expression           	: 	unary_expression {}
+                                    	| 	multiplicative_expression T_Star unary_expression {}
+                                    	| 	multiplicative_expression T_Slash unary_expression {}
+                                    	;
+
+additive_expression                 	:	multiplicative_expression  {}
+                                    	| 	additive_expression T_Plus multiplicative_expression {}
+                                    	| 	additive_expression T_Dash multiplicative_expression {}
+                                    	;
+
+shift_expression                    	: 	additive_expression {} ;
+
+relational_expression               	: 	shift_expression {}
+                                    	| 	relational_expression T_LeftAngle shift_expression {}
+                                    	| 	relational_expression T_RightAngle shift_expression {}
+                                    	| 	relational_expression T_LessEqual shift_expression {}
+                                    	| 	relational_expression T_GreaterEqual shift_expression {}
+                                    	;
+
+equality_expression                 	: 	relational_expression {}
+                                    	| 	equality_expression T_EQ relational_expression {}
+                                    	| 	/* equality_expression T_NQ relational_expression {} */
+                                    	;
+
+and_expression                      	:	equality_expression {};
+
+exclusive_or_expression             	: 	and_expression {};
+
+inclusive_or_expression             	: 	exclusive_or_expression {};
+
+logical_and_expression              	: 	inclusive_or_expression {}
+                                    	| 	logical_and_expression T_And inclusive_or_expression {}
+                                    	;
+
+logical_xor_expression              	:	logical_and_expression {};
+
+logical_or_expression               	: 	logical_xor_expression {}
+                                    	| 	logical_or_expression T_Or logical_xor_expression {}
+					;
+
+conditional_expression			:	logical_or_expression {}
+					|	logical_or_expression T_Question expression T_Colon assignment_expression {}
+					;
+
+assignment_expression               	: 	conditional_expression {}
+                                    	| 	unary_expression assignment_operator assignment_expression {}
+                                    	;
+
+assignment_operator                 	: 	T_Equal     {/* Fill it */}
+                                    	| 	T_MulAssign {/* Fill it */}
+                                    	| 	T_DivAssign {/* Fill it */}
+                                    	| 	T_AddAssign {/* Fill it */}
+                                    	| 	T_SubAssign {/* Fill it */}
+                                    	;
+
+expression                          	: 	assignment_expression {};
+
+constant 	                        :	conditional_expression {};
+
 
 
 %%
