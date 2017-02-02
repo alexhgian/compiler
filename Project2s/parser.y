@@ -148,6 +148,17 @@ void yyerror(const char *msg); // standard error-handling routine
 
 %type <Identifier> variable_identifier
 %type <expr>    primary_expression
+%type <expr>    expression
+%type <expr>    assignment_expression
+
+%type <type>                        fully_specified_type
+%type <type>                        type_specifier
+%type <fnDecl>                      function_prototype
+%type <fnDecl>                      function_declarator
+%type <varDeclList>                 function_header_with_parameters
+%type <operators>                   assignment_operator
+%type <operators>                   unary_operator
+
 
 
 %%
@@ -219,7 +230,7 @@ function_call_header_with_parameters 	:	function_call_header assignment_expressi
 
 function_call_header			: 	function_identifier T_LeftParen {};
 
-function_identifier                  	: 	/*type_specifier {} */
+function_identifier                  	: 	type_specifier {}
                                      	| 	postfix_expression {}
                                      	;
 
@@ -254,7 +265,7 @@ relational_expression               	: 	shift_expression {}
 
 equality_expression                 	: 	relational_expression {}
                                     	| 	equality_expression T_EQ relational_expression {}
-                                    	| 	/* equality_expression T_NQ relational_expression {} */
+                                    	| 	equality_expression T_NE relational_expression {} 
                                     	;
 
 and_expression                      	:	equality_expression {};
@@ -290,7 +301,182 @@ assignment_operator                 	: 	T_Equal     {/* Fill it */}
 
 expression                          	: 	assignment_expression {};
 
-constant 	                        :	conditional_expression {};
+constant_expression 	                :	conditional_expression {};
+
+
+
+declaration                         	: 	function_prototype T_Semicolon {}
+                                    	| 	init_declarator_list T_Semicolon {/* this is for test0 */}
+                                    	| 	type_qualifier T_Identifier T_Semicolon {}
+                                    	;
+
+function_prototype                  	: 	function_declarator T_RightParen {} ;
+
+function_declarator                 	: 	function_header {}
+                                    	| 	function_header_with_parameters {}
+                                    	;
+
+function_header_with_parameters     	: 	function_header parameter_declaration {}
+                                    	| 	function_header_with_parameters T_Comma parameter_declaration {}
+                                    	;
+
+function_header                     	: 	fully_specified_type T_Identifier T_LeftParen {};
+
+parameter_declarator			:	type_specifier T_Identifier {};
+
+parameter_declaration               	:	parameter_declarator {/* */}
+                                    	| 	parameter_type_specifier {/* */}
+                                    	;
+
+parameter_type_specifier		:	type_specifier {};
+
+init_declarator_list			:	single_declaration {};
+
+single_declaration			:	fully_specified_type {}
+					|	fully_specified_type T_Identifier {}
+					|	fully_specified_type T_Identifier array_specifier {}
+					|	fully_specified_type T_Identifier T_Equal initializer {}
+					;
+
+fully_specified_type			:	type_specifier {}
+					|	type_qualifier type_specifier {}
+					;
+
+type_qualifier				:	single_type_qualifier {}
+					|	type_qualifier single_type_qualifier {}
+					;
+
+single_type_qualifier			:	storage_qualifier {};
+
+storage_qualifier			:	T_Const {}
+					|	T_In {}
+					|	T_Out {}
+					|	T_Uniform {}
+					;
+
+type_specifier				:	type_specifier_nonarray {}
+					|	type_specifier_nonarray array_specifier {}
+					;
+
+array_specifier				:	T_LeftBracket constant_expression T_RightBracket {};
+
+type_specifier_nonarray			:	T_Void {}
+					|	T_Float {}
+					|	T_Int {}
+					|	T_Bool {}
+					|	T_Vec2 {}
+					|	T_Vec3 {}
+					|	T_Vec4 {}
+					|	T_Bvec2 {}
+					|	T_Bvec3 {}
+					|	T_Bvec4 {}
+					|	T_Ivec2 {}
+					|	T_Ivec3 {}
+					|	T_Ivec4 {}
+					|	T_Uvec2 {}
+					|	T_Uvec3 {}
+					|	T_Uvec4 {}
+					|	T_Mat2 {}
+					|	T_Mat3 {}
+					|	T_Mat4 {}
+					;
+
+initializer                         	: 	assignment_expression {};
+
+declaration_statement			:	declaration {};
+
+statement                           	: 	compound_statement_with_scope {}
+                                    	| 	simple_statement {}
+                                    	;
+
+statement_no_new_scope              	: 	compound_statement_no_new_scope {}
+                                    	| 	simple_statement {}
+                                    	;
+
+statement_with_scope                	: 	compound_statement_no_new_scope {}
+                                    	| 	simple_statement {}
+                                    	;
+
+simple_statement                    	: 	declaration_statement {}
+                                    	| 	expression_statement {}
+                                    	| 	selection_statement {}
+                                    	| 	switch_statement {}
+                                    	| 	case_label {}
+                                    	| 	iteration_statement {}
+					|	jump_statement {}
+                                    	;
+
+compound_statement_with_scope       	: 	T_LeftBrace T_RightBrace {}
+					| 	T_LeftBrace T_RightBrace statement_list T_RightBrace {}
+					;
+
+
+compound_statement_no_new_scope     	: 	T_LeftBrace T_RightBrace {}
+					|	T_LeftBrace T_RightBrace statement_list T_RightBrace {}
+					;
+
+statement_list                      	: 	statement  {}
+                                    	| 	statement_list statement  {}
+                                    	;
+
+expression_statement                	:	T_Semicolon {}
+                                    	| 	expression T_Semicolon {}
+                                    	;
+
+selection_statement                 	: 	T_If T_LeftParen expression T_RightParen selection_rest_statement {};
+
+selection_rest_statement            	: 	statement_with_scope T_Else statement_with_scope {}
+                                    	| 	statement_with_scope {}
+                                    	;
+
+condition                           	: 	expression {}
+                                    	| 	fully_specified_type T_Identifier T_Equal initializer {}
+                                    	;
+
+switch_statement                    	: 	T_Switch T_LeftParen expression T_RightParen T_LeftBrace statement_list T_RightBrace {};
+
+switch_statement			:	/* empty */ {}
+					|	statement_list {}
+					;
+
+case_label                          	: 	T_Case expression T_Colon {}
+                                    	| 	T_Default T_Colon {}
+                                    	;
+
+iteration_statement                 	: 	T_While T_LeftParen condition T_RightParen statement_no_new_scope {}
+					|	T_Do statement_with_scope T_While T_LeftParen expression T_RightParen T_Semicolon {}
+                                    	| 	T_For T_LeftParen for_init_statement for_rest_statement T_RightParen statement_no_new_scope {}
+                                    	;
+
+for_init_statement                  	: 	expression_statement {}
+                                    	| 	declaration_statement {}
+                                    	;
+
+conditionopt				:	condition {}
+					|	/* empty */ {}
+					;
+
+for_rest_statement                  	: 	conditionopt T_Semicolon {}
+                                    	| 	conditionopt T_Semicolon expression {}
+                                    	;
+
+jump_statement				:	T_Continue T_Semicolon {}
+					|	T_Break T_Semicolon {}
+					|	T_Return T_Semicolon {}
+					|	T_Return expression T_Semicolon {}
+					;
+
+translation_unit                    	: 	external_declaration {}
+                                    	| 	translation_unit external_declaration  {}
+                                    	;
+
+external_declaration                	: 	function_definition {}
+                                    	| 	declaration {}
+                                    	;
+
+function_definition                 	: 	function_prototype compound_statement_no_new_scope {};
+
+
 
 
 
