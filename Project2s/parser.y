@@ -103,6 +103,10 @@ void yyerror(const char *msg); // standard error-handling routine
     Type *type;
     NamedType *namedType;
     ArrayType *arrayType;
+
+
+    //functions
+
 }
 
 
@@ -153,9 +157,13 @@ void yyerror(const char *msg); // standard error-handling routine
 
 %type <type>                        fully_specified_type
 %type <type>                        type_specifier
+%type <type>                        type_specifier_nonarray
 %type <fnDecl>                      function_prototype
 %type <fnDecl>                      function_declarator
+%type <fnDecl>                      function_header
 %type <varDeclList>                 function_header_with_parameters
+%type <varDecl>                     parameter_declarator
+
 %type <operators>                   assignment_operator
 %type <operators>                   unary_operator
 
@@ -196,7 +204,7 @@ primary_expression 	:	variable_identifier	{}
 
 postfix_expression	:	primary_expression	{/* Fill it */}
 			|	postfix_expression T_LeftBracket integer_expression T_RightBracket {}
-			| 	function_call
+			| 	function_call {}
 			|	postfix_expression T_Dot T_Identifier {/* Need to complete this expression */}
 			|	postfix_expression T_Inc {}
 			|	postfix_expression T_Dec {}
@@ -220,7 +228,7 @@ function_call_header_with_parameters 	:	function_call_header assignment_expressi
                                      	| 	function_call_header_with_parameters ',' assignment_expression {}
                                      	;
 
-function_call_header			: 	function_identifier T_LeftParen {};
+function_call_header			        : 	function_identifier T_LeftParen {};
 
 function_identifier                  	: 	type_specifier {}
                                      	| 	postfix_expression {}
@@ -302,6 +310,9 @@ declaration                         	: 	function_prototype T_Semicolon {}
                                     	| 	type_qualifier T_Identifier T_Semicolon {}
                                     	;
 
+
+
+
 function_prototype                  	: 	function_declarator T_RightParen {} ;
 
 function_declarator                 	: 	function_header {}
@@ -312,12 +323,21 @@ function_header_with_parameters     	: 	function_header parameter_declaration {}
                                     	| 	function_header_with_parameters T_Comma parameter_declaration {}
                                     	;
 
-function_header                     	: 	fully_specified_type T_Identifier T_LeftParen {};
+function_header                     	: 	fully_specified_type T_Identifier T_LeftParen {
+                                                $$ = new FnDecl(new Identifier(@2, $2), $1, new List<VarDecl*>());
+                                            };
 
-parameter_declarator			:	type_specifier T_Identifier {};
 
-parameter_declaration               	:	parameter_declarator {/* */}
-                                    	| 	parameter_type_specifier {/* */}
+
+
+
+parameter_declarator			:	type_specifier T_Identifier {
+                                        $$ = new VarDecl(new Identifier(@2,$2),$1);
+                                    }
+                                ;
+
+parameter_declaration               	:	parameter_declarator {}
+                                    	| 	parameter_type_specifier {}
                                     	;
 
 parameter_type_specifier		:	type_specifier {};
@@ -338,40 +358,40 @@ type_qualifier				:	single_type_qualifier {}
 					|	type_qualifier single_type_qualifier {}
 					;
 
-single_type_qualifier			:	storage_qualifier {};
+single_type_qualifier   :	storage_qualifier {};
 
-storage_qualifier			:	T_Const {}
+storage_qualifier   :	T_Const {}
 					|	T_In {}
 					|	T_Out {}
 					|	T_Uniform {}
 					;
 
-type_specifier				:	type_specifier_nonarray {}
+type_specifier		:	type_specifier_nonarray {$$ = $1;}
 					|	type_specifier_nonarray array_specifier {}
 					;
 
-array_specifier				:	T_LeftBracket constant_expression T_RightBracket {};
+array_specifier	    :	T_LeftBracket constant_expression T_RightBracket {};
 
-type_specifier_nonarray			:	T_Void {}
-					|	T_Float {}
-					|	T_Int {}
-					|	T_Bool {}
-					|	T_Vec2 {}
-					|	T_Vec3 {}
-					|	T_Vec4 {}
-					|	T_Bvec2 {}
-					|	T_Bvec3 {}
-					|	T_Bvec4 {}
-					|	T_Ivec2 {}
-					|	T_Ivec3 {}
-					|	T_Ivec4 {}
-					|	T_Uvec2 {}
-					|	T_Uvec3 {}
-					|	T_Uvec4 {}
-					|	T_Mat2 {}
-					|	T_Mat3 {}
-					|	T_Mat4 {}
-					;
+type_specifier_nonarray			:	T_Void {$$ = Type::voidType;}
+            					|	T_Float {$$ = Type::floatType;}
+            					|	T_Int {$$ = Type::intType;}
+            					|	T_Bool {$$ = Type::boolType;}
+            					|	T_Vec2 {$$ = Type::vec2Type;}
+            					|	T_Vec3 {$$ = Type::vec3Type;}
+            					|	T_Vec4 {$$ = Type::vec4Type;}
+            					|	T_Bvec2 {$$ = Type::bvec2Type;}
+            					|	T_Bvec3 {$$ = Type::bvec3Type;}
+            					|	T_Bvec4 {$$ = Type::bvec4Type;}
+            					|	T_Ivec2 {$$ = Type::ivec2Type;}
+            					|	T_Ivec3 {$$ = Type::ivec3Type;}
+            					|	T_Ivec4 {$$ = Type::ivec4Type;}
+            					|	T_Uvec2 {$$ = Type::uvec2Type;}
+            					|	T_Uvec3 {$$ = Type::uvec3Type;}
+            					|	T_Uvec4 {$$ = Type::uvec4Type;}
+            					|	T_Mat2 {$$ = Type::mat2Type;}
+            					|	T_Mat3 {$$ = Type::mat3Type;}
+            					|	T_Mat4 {$$ = Type::mat4Type;}
+            					;
 
 initializer                         	: 	assignment_expression {};
 
