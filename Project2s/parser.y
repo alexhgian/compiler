@@ -156,6 +156,9 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <fnDecl>                      function_prototype
 %type <fnDecl>                      function_declarator
 %type <varDeclList>                 function_header_with_parameters
+%type <>                            parameter_declarator
+%type <>                            parameter_declaration
+
 %type <operators>                   assignment_operator
 %type <operators>                   unary_operator
 
@@ -196,7 +199,7 @@ primary_expression 	:	variable_identifier	{}
 
 postfix_expression	:	primary_expression	{/* Fill it */}
 			|	postfix_expression T_LeftBracket integer_expression T_RightBracket {}
-			| 	function_call
+			| 	function_call {}
 			|	postfix_expression T_Dot T_Identifier {/* Need to complete this expression */}
 			|	postfix_expression T_Inc {}
 			|	postfix_expression T_Dec {}
@@ -302,6 +305,9 @@ declaration                         	: 	function_prototype T_Semicolon {}
                                     	| 	type_qualifier T_Identifier T_Semicolon {}
                                     	;
 
+
+
+
 function_prototype                  	: 	function_declarator T_RightParen {} ;
 
 function_declarator                 	: 	function_header {}
@@ -314,10 +320,16 @@ function_header_with_parameters     	: 	function_header parameter_declaration {}
 
 function_header                     	: 	fully_specified_type T_Identifier T_LeftParen {};
 
-parameter_declarator			:	type_specifier T_Identifier {};
 
-parameter_declaration               	:	parameter_declarator {/* */}
-                                    	| 	parameter_type_specifier {/* */}
+
+
+
+parameter_declarator			:	type_specifier T_Identifier {
+                                        $$ = new VarDecl(new Identifier(@2,$2),$1);
+                                    };
+
+parameter_declaration               	:	parameter_declarator {}
+                                    	| 	parameter_type_specifier {$$ = $1;}
                                     	;
 
 parameter_type_specifier		:	type_specifier {};
