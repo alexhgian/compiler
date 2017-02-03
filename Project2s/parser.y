@@ -144,9 +144,9 @@ void yyerror(const char *msg); // standard error-handling routine
  * pp2: You'll need to add many of these of your own.
  */
 %type <declList>  DeclList
-%type <decl>      Decl
+%type <decl>      declaration
 
-%type <Identifier> variable_identifier
+%type <ident> variable_identifier
 %type <expr>    primary_expression
 %type <expr>    expression
 %type <expr>    assignment_expression
@@ -180,32 +180,24 @@ Program   :    DeclList            {
                                     }
           ;
 
-DeclList  :    DeclList Decl        { ($$=$1)->Append($2); }
-          |    Decl                 { ($$ = new List<Decl*>)->Append($1); }
-          ;
-
-Decl      :    T_Int T_Identifier T_Semicolon {
-                                                 // replace it with your implementation
-                                                 Identifier *id = new Identifier(@2, $2);
-                                                 $$ = new VarDecl(id, Type::intType);
-                                              }
+DeclList  :    DeclList declaration        { ($$=$1)->Append($2); }
+          |    declaration                 { ($$ = new List<Decl*>)->Append($1); }
           ;
 
 
-variable_identifier 	:	T_Identifier         { $$ = new Identifier(@1,$1);};
+variable_identifier :	T_Identifier         { $$ = new Identifier(@1,$1);};
 
-primary_expression 	:	variable_identifier	{/* Fill it */}
-		   	|	T_IntConstant		{}
-		   	|	T_FloatConstant		{}
-		   	|	T_BoolConstant		{}
-		   	|	T_LeftParen		{}
-		   	|	T_RightParen		{}
-			;
+primary_expression 	:	variable_identifier	{}
+        		   	|	T_IntConstant		{$$ = new IntConstant(@1,$1);}
+        		   	|	T_FloatConstant		{$$ = new IntConstant(@1,$1);}
+        		   	|	T_BoolConstant		{$$ = new BoolConstant(@1,$1);}
+        		   	|	T_LeftParen expression T_RightParen {$$=$2;}
+        			;
 
 postfix_expression	:	primary_expression	{/* Fill it */}
 			|	postfix_expression T_LeftBracket integer_expression T_RightBracket {}
 			| 	function_call
-			|	postfix_expression T_Dot  {/* Need to complete this expression */}
+			|	postfix_expression T_Dot T_Identifier {/* Need to complete this expression */}
 			|	postfix_expression T_Inc {}
 			|	postfix_expression T_Dec {}
 			;
@@ -265,7 +257,7 @@ relational_expression               	: 	shift_expression {}
 
 equality_expression                 	: 	relational_expression {}
                                     	| 	equality_expression T_EQ relational_expression {}
-                                    	| 	equality_expression T_NE relational_expression {} 
+                                    	| 	equality_expression T_NE relational_expression {}
                                     	;
 
 and_expression                      	:	equality_expression {};
