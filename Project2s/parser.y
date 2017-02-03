@@ -284,11 +284,11 @@ assignment_expression               	: 	conditional_expression {}
                                     	| 	unary_expression assignment_operator assignment_expression {}
                                     	;
 
-assignment_operator                 	: 	T_Equal     {/* Fill it */}
-                                    	| 	T_MulAssign {/* Fill it */}
-                                    	| 	T_DivAssign {/* Fill it */}
-                                    	| 	T_AddAssign {/* Fill it */}
-                                    	| 	T_SubAssign {/* Fill it */}
+assignment_operator                 	: 	T_Equal     {$$ = new Operator(@1,"=");}
+                                    	| 	T_MulAssign {$$ = new Operator(@1,"*=");}
+                                    	| 	T_DivAssign {$$ = new Operator(@1,"/=");}
+                                    	| 	T_AddAssign {$$ = new Operator(@1,"+=");}
+                                    	| 	T_SubAssign {$$ = new Operator(@1,"-=");}
                                     	;
 
 expression                          	: 	assignment_expression {};
@@ -496,5 +496,5 @@ function_definition                 	: 	function_prototype compound_statement_no
 void InitParser()
 {
    PrintDebug("parser", "Initializing parser");
-   yydebug = false;
+   yydebug = true;
 }
