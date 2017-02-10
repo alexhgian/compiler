@@ -84,6 +84,7 @@ void yyerror(const char *msg); // standard error-handling routine
 
     //ast_stmt.h
     Program *program;
+    List<Stmt*> *stmtList;
     Stmt *stmt;
     StmtBlock *stmtBlock;
     ConditionalStmt *conditionalStmt;
@@ -159,14 +160,17 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <type>                        type_specifier
 %type <type>                        type_specifier_nonarray
 %type <fnDecl>                      function_prototype
-%type <fnDecl>                     function_declarator
+%type <fnDecl>                      function_declarator
 %type <varDeclList>                 function_header_with_parameters
 %type <varDecl>                     parameter_declaration
 
 %type <operators>                   assignment_operator
 %type <operators>                   unary_operator
 
-
+%type <stmtBlock>                   compound_statement_with_scope
+%type <stmtBlock>                   compound_statement_no_new_scope
+%type <stmtList>                    statement_list
+%type <stm>                         statement
 
 %%
 /* Rules
@@ -405,10 +409,10 @@ type_specifier_nonarray			:	T_Void {$$ = Type::voidType;}
 
 initializer                         	: 	assignment_expression {};
 
-declaration_statement			:	declaration {};
 
-statement                           	: 	compound_statement_with_scope {}
-                                    	| 	simple_statement {}
+
+statement                           	: 	compound_statement_with_scope {$$ = $1}
+                                    	| 	simple_statement {$$ = $1}
                                     	;
 
 statement_no_new_scope              	: 	compound_statement_no_new_scope {}
@@ -428,23 +432,25 @@ simple_statement                    	: 	declaration_statement {}
 					                    |	jump_statement {}
                                     	;
 
-compound_statement_with_scope       	: 	T_LeftBrace T_RightBrace {}
-					| 	T_LeftBrace T_RightBrace statement_list T_RightBrace {}
-					;
 
 
-compound_statement_no_new_scope     	: 	T_LeftBrace T_RightBrace {}
-                    					|	T_LeftBrace T_RightBrace statement_list T_RightBrace {}
+compound_statement_with_scope       	: 	T_LeftBrace T_RightBrace {$$ = new StmtBlock(new List<VarDecl*>, new List<Stmt *>); }
+					                    | 	T_LeftBrace T_RightBrace statement_list T_RightBrace { $$ = new StmtBlock(new List<VarDecl*>, $2);}
+					                    ;
+
+
+compound_statement_no_new_scope     	: 	T_LeftBrace T_RightBrace { $$ = new StmtBlock(new List<VarDecl*>, new List<Stmt *>); }
+                    					|	T_LeftBrace T_RightBrace statement_list T_RightBrace { $$ = new StmtBlock(new List<VarDecl*>, $2);}
                     					;
 
-statement_list                      	: 	statement  {}
-                                    	| 	statement_list statement  {}
+statement_list                      	: 	statement  { ($$ = new List<Stmt*>)->Append($1); }
+                                    	| 	statement_list statement  { ($$ = $1)->Append($2); }
                                     	;
 
+declaration_statement			        :	declaration {};
 expression_statement                	:	T_Semicolon {}
                                     	| 	expression T_Semicolon {}
                                     	;
-
 selection_statement                 	: 	T_If T_LeftParen expression T_RightParen selection_rest_statement {};
 
 selection_rest_statement            	: 	statement_with_scope T_Else statement_with_scope {}
