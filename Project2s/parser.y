@@ -159,10 +159,9 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <type>                        type_specifier
 %type <type>                        type_specifier_nonarray
 %type <fnDecl>                      function_prototype
-%type <fnDecl>                      function_declarator
-%type <fnDecl>                      function_header
+%type <fnDecl>                     function_declarator
 %type <varDeclList>                 function_header_with_parameters
-%type <varDecl>                     parameter_declarator
+%type <varDecl>                     parameter_declaration
 
 %type <operators>                   assignment_operator
 %type <operators>                   unary_operator
@@ -304,73 +303,84 @@ expression                          	: 	assignment_expression {};
 constant_expression 	                :	conditional_expression {};
 
 
-
+/*
+Function declarations
+Single declaration
+*/
 declaration                         	: 	function_prototype T_Semicolon {}
                                     	| 	init_declarator_list T_Semicolon {/* this is for test0 */}
                                     	| 	type_qualifier T_Identifier T_Semicolon {}
                                     	;
 
 
+/*
+* function_prototype
+* function_declarator
+* function_header_with_parameters
+* function_header
+*/
 
+function_prototype                  	: 	function_declarator T_RightParen {}
+                                        ;
 
-function_prototype                  	: 	function_declarator T_RightParen {} ;
-
-function_declarator                 	: 	function_header {}
-                                    	| 	function_header_with_parameters {}
-                                    	;
-
-function_header_with_parameters     	: 	function_header parameter_declaration {}
-                                    	| 	function_header_with_parameters T_Comma parameter_declaration {}
-                                    	;
-
-function_header                     	: 	fully_specified_type T_Identifier T_LeftParen {
+ function_declarator                 	: 	fully_specified_type T_Identifier T_LeftParen {
                                                 $$ = new FnDecl(new Identifier(@2, $2), $1, new List<VarDecl*>());
-                                            };
-
-
-
-
-
-parameter_declarator			:	type_specifier T_Identifier {
-                                        $$ = new VarDecl(new Identifier(@2,$2),$1);
-                                    }
-                                ;
-
-parameter_declaration               	:	parameter_declarator {}
-                                    	| 	parameter_type_specifier {}
+                                            }
+                                   	    | 	fully_specified_type T_Identifier T_LeftParen function_header_with_parameters {
+                                                $$ = new FnDecl(new Identifier(@2, $2), $1, $4);
+                                            }
                                     	;
 
-parameter_type_specifier		:	type_specifier {};
+
+function_header_with_parameters     	:   parameter_declaration {
+                                                ($$ = new List<VarDecl*>())->Append($1);
+                                            }
+                                    	|   function_header_with_parameters T_Comma parameter_declaration {
+                                                ($$ = $1)->Append($3);
+                                            }
+                                    	;
+/*
+* function_header                     	: 	fully_specified_type T_Identifier T_LeftParen {};
+*/
+
+/*
+* parameter_declarator			:	type_specifier T_Identifier {};
+*/
+
+parameter_declaration               	:	type_specifier T_Identifier {
+                                                $$ = new VarDecl(new Identifier(@2,$2),$1);
+                                            }
+                                    	| 	type_specifier {$$ = new VarDecl(new Identifier(@1, ""), $1);}
+                                    	;
+/*
+* parameter_type_specifier		:	type_specifier {};
+*/
 
 init_declarator_list			:	single_declaration {};
 
-single_declaration			:	fully_specified_type {}
-					|	fully_specified_type T_Identifier {}
-					|	fully_specified_type T_Identifier array_specifier {}
-					|	fully_specified_type T_Identifier T_Equal initializer {}
-					;
+single_declaration	            :	fully_specified_type {} /* not tested i.e `int` or `const`*/
+					            |	fully_specified_type T_Identifier {}
+					            |	fully_specified_type T_Identifier array_specifier {}
+					            |	fully_specified_type T_Identifier T_Equal initializer {}
+					            ;
 
 fully_specified_type			:	type_specifier {}
-					|	type_qualifier type_specifier {}
-					;
+					            |	type_qualifier type_specifier {}
+					            ;
 
-type_qualifier				:	single_type_qualifier {}
-					|	type_qualifier single_type_qualifier {}
-					;
 
-single_type_qualifier   :	storage_qualifier {};
-
-storage_qualifier   :	T_Const {}
-					|	T_In {}
-					|	T_Out {}
-					|	T_Uniform {}
-					;
+/* combined single_type_qualifier, storage_qualifier w/ type_qualifier */
+type_qualifier	                :	T_Const {}
+					            |	T_In {}
+					            |	T_Out {}
+					            |	T_Uniform {}
+					            ;
 
 type_specifier		:	type_specifier_nonarray {$$ = $1;}
 					|	type_specifier_nonarray array_specifier {}
 					;
 
-array_specifier	    :	T_LeftBracket constant_expression T_RightBracket {};
+array_specifier	    :	T_LeftBracket constant_expression T_RightBracket { };
 
 type_specifier_nonarray			:	T_Void {$$ = Type::voidType;}
             					|	T_Float {$$ = Type::floatType;}
@@ -415,7 +425,7 @@ simple_statement                    	: 	declaration_statement {}
                                     	| 	switch_statement {}
                                     	| 	case_label {}
                                     	| 	iteration_statement {}
-					|	jump_statement {}
+					                    |	jump_statement {}
                                     	;
 
 compound_statement_with_scope       	: 	T_LeftBrace T_RightBrace {}
@@ -424,8 +434,8 @@ compound_statement_with_scope       	: 	T_LeftBrace T_RightBrace {}
 
 
 compound_statement_no_new_scope     	: 	T_LeftBrace T_RightBrace {}
-					|	T_LeftBrace T_RightBrace statement_list T_RightBrace {}
-					;
+                    					|	T_LeftBrace T_RightBrace statement_list T_RightBrace {}
+                    					;
 
 statement_list                      	: 	statement  {}
                                     	| 	statement_list statement  {}
@@ -516,5 +526,5 @@ function_definition                 	: 	function_prototype compound_statement_no
 void InitParser()
 {
    PrintDebug("parser", "Initializing parser");
-   yydebug = true;
+   yydebug = false;
 }
