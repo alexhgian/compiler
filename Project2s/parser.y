@@ -150,6 +150,7 @@ void yyerror(const char *msg); // standard error-handling routine
  */
 %type <declList>  DeclList
 %type <decl>      declaration
+%type <decl>      decl
 
 %type <ident> variable_identifier
 %type <expr>    primary_expression
@@ -167,10 +168,11 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <operators>                   assignment_operator
 %type <operators>                   unary_operator
 
-%type <stmtBlock>                   compound_statement_with_scope
-%type <stmtBlock>                   compound_statement_no_new_scope
+%type <stmt>                        compound_statement
 %type <stmtList>                    statement_list
-%type <stm>                         statement
+%type <stmt>                         statement
+%type <stmt>                         simple_statement
+
 
 %%
 /* Rules
@@ -191,10 +193,12 @@ Program   :    DeclList            {
                                     }
           ;
 
-DeclList  :    DeclList declaration        { ($$=$1)->Append($2); }
-          |    declaration                 { ($$ = new List<Decl*>)->Append($1); }
+DeclList  :    DeclList decl        { ($$=$1)->Append($2); }
+          |    decl                 { ($$ = new List<Decl*>)->Append($1); }
           ;
-
+decl        :    declaration                   { $$ = $1; }
+            |    function_prototype compound_statement    { $1->SetFunctionBody($2); $$ = $1; }
+            ;
 
 variable_identifier :	T_Identifier         { $$ = new Identifier(@1,$1);};
 
@@ -327,7 +331,7 @@ declaration                         	: 	function_prototype T_Semicolon {}
 function_prototype                  	: 	function_declarator T_RightParen {}
                                         ;
 
- function_declarator                 	: 	fully_specified_type T_Identifier T_LeftParen {
+function_declarator                 	: 	fully_specified_type T_Identifier T_LeftParen {
                                                 $$ = new FnDecl(new Identifier(@2, $2), $1, new List<VarDecl*>());
                                             }
                                    	    | 	fully_specified_type T_Identifier T_LeftParen function_header_with_parameters {
@@ -411,15 +415,19 @@ initializer                         	: 	assignment_expression {};
 
 
 
-statement                           	: 	compound_statement_with_scope {$$ = $1}
-                                    	| 	simple_statement {$$ = $1}
+compound_statement      	            : 	T_LeftBrace T_RightBrace {$$ = new StmtBlock(new List<VarDecl*>, new List<Stmt *>); }
+					                    | 	T_LeftBrace statement_list T_RightBrace { $$ = new StmtBlock(new List<VarDecl*>, $2);}
+					                    ;
+
+statement                           	: 	compound_statement {$$ = $1;}
+                                    	| 	simple_statement {$$ = $1;}
                                     	;
 
-statement_no_new_scope              	: 	compound_statement_no_new_scope {}
+statement_no_new_scope              	: 	compound_statement {}
                                     	| 	simple_statement {}
                                     	;
 
-statement_with_scope                	: 	compound_statement_no_new_scope {}
+statement_with_scope                	: 	compound_statement {}
                                     	| 	simple_statement {}
                                     	;
 
@@ -433,16 +441,12 @@ simple_statement                    	: 	declaration_statement {}
                                     	;
 
 
-
-compound_statement_with_scope       	: 	T_LeftBrace T_RightBrace {$$ = new StmtBlock(new List<VarDecl*>, new List<Stmt *>); }
-					                    | 	T_LeftBrace T_RightBrace statement_list T_RightBrace { $$ = new StmtBlock(new List<VarDecl*>, $2);}
-					                    ;
-
+/*
 
 compound_statement_no_new_scope     	: 	T_LeftBrace T_RightBrace { $$ = new StmtBlock(new List<VarDecl*>, new List<Stmt *>); }
                     					|	T_LeftBrace T_RightBrace statement_list T_RightBrace { $$ = new StmtBlock(new List<VarDecl*>, $2);}
                     					;
-
+*/
 statement_list                      	: 	statement  { ($$ = new List<Stmt*>)->Append($1); }
                                     	| 	statement_list statement  { ($$ = $1)->Append($2); }
                                     	;
@@ -502,7 +506,7 @@ external_declaration                	: 	function_definition {}
                                     	| 	declaration {}
                                     	;
 
-function_definition                 	: 	function_prototype compound_statement_no_new_scope {};
+function_definition                 	: 	function_prototype compound_statement {};
 
 
 
