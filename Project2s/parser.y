@@ -172,7 +172,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <fnDecl>                      function_prototype
 %type <fnDecl>                      function_declarator
 %type <varDeclList>                 fn_parameters
-%type <varDecl>                     parameter_declaration
+%type <varDecl>                     parameter_declaration single_declaration
 
 %type <operators>                   assignment_operator
 %type <operators>                   unary_operator
@@ -225,7 +225,7 @@ primary_expression
 
 postfix_expression
     :	primary_expression	{$$ = $1;}
-	// |	postfix_expression T_LeftBracket integer_expression T_RightBracket {}
+	|	postfix_expression T_LeftBracket integer_expression T_RightBracket { $$ = $1; }
 	// | 	function_call {$$ = $1;}
     |	postfix_expression T_Dot T_Identifier {$$ = new FieldAccess($1, new Identifier(@3, $3));}
     |	postfix_expression T_Inc {$$ = new PostfixExpr($1, new Operator(@2, "++") );}
@@ -233,7 +233,7 @@ postfix_expression
     ;
 
 integer_expression
-    :	expression {/* */};
+    :	expression {};
 
 function_call
     :	function_call_or_method {/* Need to finish */}
@@ -421,9 +421,9 @@ init_declarator_list
 
 single_declaration
     :	fully_specified_type {} /* not tested i.e `int` or `const`*/
-    |	fully_specified_type T_Identifier {}
-    |	fully_specified_type T_Identifier array_specifier {}
-    |	fully_specified_type T_Identifier T_Equal initializer {}
+    |	fully_specified_type T_Identifier { $$ = new VarDecl(new Identifier(@2, $2), $1); }
+    |	fully_specified_type T_Identifier array_specifier { $$ = new VarDecl(new Identifier(@2, $2), $1); }
+    |	fully_specified_type T_Identifier T_Equal initializer { $$ = new VarDecl(new Identifier(@2, $2), $1); }
     ;
 
 fully_specified_type
@@ -446,7 +446,7 @@ type_specifier
     ;
 
 array_specifier
-    :	T_LeftBracket constant_expression T_RightBracket { };
+    :	T_LeftBracket T_IntConstant T_RightBracket {};
 
 type_specifier_nonarray
     :	T_Void {$$ = Type::voidType;}
@@ -514,7 +514,7 @@ compound_statement_no_new_scope     	: 	T_LeftBrace T_RightBrace { $$ = new Stmt
 */
 statement_list
     : 	statement  { ($$ = new List<Stmt*>)->Append($1); }
-    | 	statement_list statement  { ($$ = $1)->Append($2);
+    | 	statement_list statement  { ($$ = $1)->Append($2); }
     ;
 
 declaration_statement
@@ -615,5 +615,5 @@ function_definition
 void InitParser()
 {
    PrintDebug("parser", "Initializing parser");
-   yydebug = false;
+   yydebug = true;
 }
