@@ -178,7 +178,13 @@ void yyerror(const char *msg); // standard error-handling routine
                 and_expression
                 inclusive_or_expression
                 logical_and_expression
-
+                constant_expression
+                initializer
+                conditionopt
+                condition
+                expression_statement
+                declaration_statement
+                for_init_statement
 
 %type <integerConstant> array_specifier
 %type <type>                        fully_specified_type
@@ -187,15 +193,30 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <fnDecl>                      function_prototype
 %type <fnDecl>                      function_declarator
 %type <varDeclList>                 fn_parameters
-%type <varDecl>                     parameter_declaration single_declaration
+
+%type <varDecl>                     parameter_declaration
+                                    single_declaration
+                                    init_declarator_list
 
 %type <operators>                   assignment_operator
 %type <operators>                   unary_operator
 
-%type <stmt>                        compound_statement
 %type <stmtList>                    statement_list
-%type <stmt>                         statement
-%type <stmt>                         simple_statement jump_statement
+
+%type <stmt>                        statement
+                                    statement_no_new_scope
+                                    statement_with_scope
+                                    simple_statement
+
+
+                                    selection_statement
+                                    switch_statement
+                                    case_label
+                                    iteration_statement
+                                    jump_statement
+
+                                    compound_statement
+                                    
 
 
 %%
@@ -380,10 +401,10 @@ assignment_operator
     ;
 
 expression
-    : 	assignment_expression {};
+    : 	assignment_expression {$$ = $1;};
 
 constant_expression
-    :	conditional_expression {};
+    :	conditional_expression {$$ = $1;};
 
 
 /*
@@ -440,7 +461,7 @@ parameter_declaration
 */
 
 init_declarator_list
-    :	single_declaration {};
+    :	single_declaration {$$=$1;};
 
 single_declaration
     :	fully_specified_type {} /* not tested i.e `int` or `const`*/
@@ -498,7 +519,8 @@ type_specifier_nonarray
     ;
 
 initializer
-    : 	assignment_expression {};
+    : 	assignment_expression {$$=$1;}
+    ;
 
 
 
@@ -513,23 +535,23 @@ statement
     ;
 
 statement_no_new_scope
-    : 	compound_statement {}
-    | 	simple_statement {}
+    : 	compound_statement {$$ = $1;}
+    | 	simple_statement {$$ = $1;}
     ;
 
 statement_with_scope
-    : 	compound_statement {}
-    | 	simple_statement {}
+    : 	compound_statement {{$$ = $1;}}
+    | 	simple_statement {{$$ = $1;}}
     ;
 
 simple_statement
-    : 	declaration_statement {}
-    | 	expression_statement {}
-    | 	selection_statement {}
-    | 	switch_statement {}
-    | 	case_label {}
-    | 	iteration_statement {}
-    |	jump_statement {}
+    : 	declaration_statement {$$ = $1;}
+    | 	expression_statement {$$ = $1;}
+    | 	selection_statement {$$ = $1;}
+    | 	switch_statement {$$ = $1;}
+    | 	case_label {$$ = $1;}
+    | 	iteration_statement {$$ = $1;}
+    |	jump_statement {$$ = $1;}
     ;
 
 
@@ -544,27 +566,41 @@ statement_list
     | 	statement_list statement  { ($$ = $1)->Append($2); }
     ;
 
+
 declaration_statement
     :	declaration {};
+
+
 expression_statement
-    :	T_Semicolon {}
-    | 	expression T_Semicolon {}
+    :	T_Semicolon {$$ = new EmptyExpr();}
+    | 	expression T_Semicolon {$$ = $1;}
     ;
 selection_statement
-    : 	T_If T_LeftParen expression T_RightParen selection_rest_statement {};
+    : 	T_If T_LeftParen expression T_RightParen statement_with_scope T_Else statement_with_scope  {$$ = new IfStmt($3, $5, $7);}
+    |   T_If T_LeftParen expression T_RightParen statement_with_scope {$$ = new IfStmt($3, $5, NULL);}
+    ;
 
+/* its easier to have this rule in selection_statement since we're passing multiple objects around
 selection_rest_statement
     : 	statement_with_scope T_Else statement_with_scope {}
     | 	statement_with_scope {}
     ;
+*/
 
 condition
-    : 	expression {}
-    | 	fully_specified_type T_Identifier T_Equal initializer {}
+    : 	expression {$$=$1;}
+    | 	fully_specified_type T_Identifier T_Equal initializer {
+            $$ = new AssignExpr(
+                new VarExpr(@2, new Identifier(@2, $2)),
+                new Operator(@3, "=="), $4
+            );
+        }
     ;
 
 switch_statement
-    : 	T_Switch T_LeftParen expression T_RightParen T_LeftBrace statement_list T_RightBrace {};
+    : 	T_Switch T_LeftParen expression T_RightParen T_LeftBrace statement_list T_RightBrace {
+            $$ = new SwitchStmt($3, NULL, NULL);
+    };
 
 
 case_label
@@ -573,26 +609,35 @@ case_label
     ;
 
 iteration_statement
-    : 	T_While T_LeftParen condition T_RightParen statement_no_new_scope {}
-    |	T_Do statement_with_scope T_While T_LeftParen expression T_RightParen T_Semicolon {}
-    | 	T_For T_LeftParen for_init_statement for_rest_statement T_RightParen statement_no_new_scope {}
+    : 	T_While T_LeftParen condition T_RightParen statement_no_new_scope {
+            $$ = new WhileStmt($3, $5);
+        }
+    |	T_Do statement_with_scope T_While T_LeftParen expression T_RightParen T_Semicolon {
+            $$ = new DoWhileStmt($2, $5);
+        }
+    | 	T_For T_LeftParen for_init_statement conditionopt T_Semicolon T_RightParen statement_no_new_scope {
+            $$ = new ForStmt($3, $4, NULL, $7);
+        }
+    |   T_For T_LeftParen for_init_statement conditionopt T_Semicolon expression T_RightParen statement_no_new_scope {
+            $$ = new ForStmt($3, $4, $6, $8);
+        }
     ;
 
 for_init_statement
-    : 	expression_statement {}
-    | 	declaration_statement {}
+    : 	expression_statement {$$=$1;}
+    | 	declaration_statement {$$=$1;}
     ;
 
 conditionopt
     :	condition {}
     |	/* empty */ {}
     ;
-
+/* simplified into iteration_statement
 for_rest_statement
     : 	conditionopt T_Semicolon {}
     | 	conditionopt T_Semicolon expression {}
     ;
-
+*/
 jump_statement
     :	T_Continue T_Semicolon { $$ = new BreakStmt(@1);}
 	|	T_Break T_Semicolon {$$ = new BreakStmt(@1);}
