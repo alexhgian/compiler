@@ -59,6 +59,7 @@ void yyerror(const char *msg); // standard error-handling routine
     FormalsError *formalsError;
 
     //ast_expr.h
+    List<Expr*> *exprList;
     Expr *expr;
     ExprError *exprError;
     EmptyExpr *emptyExpr;
@@ -161,6 +162,10 @@ void yyerror(const char *msg); // standard error-handling routine
 
 
 %type <ident> variable_identifier
+                function_identifier
+                function_call_header_no_parameters
+
+%type <exprList> fn_call_parameters
 %type <expr>    primary_expression
                 postfix_expression
                 expression
@@ -217,6 +222,7 @@ void yyerror(const char *msg); // standard error-handling routine
 
                                     compound_statement
 
+%type <call>                        function_call
 
 
 %%
@@ -272,32 +278,58 @@ integer_expression
     :	expression {};
 
 function_call
-    :	function_call_or_method {/* Need to finish */}
-
-function_call_or_method
-    :	function_call_generic  {};
-
-function_call_generic
-    :	function_call_header_with_parameters T_RightParen {}
-    |	function_call_header_no_parameters T_RightParen {}
+    :	function_call_header_no_parameters T_RightParen {
+            Identifier *id = new Identifier(@1, $1->getName())
+            $$ = new Call(@1, NULL, id, new List<Expr*>());
+        }
+    |	function_identifier T_LeftParen fn_call_parameters T_RightParen {
+            Identifier *id = new Identifier(@1, $1->getName())
+            $$ = new Call(@1, NULL, id, $3);
+        }
     ;
+    //
+    //
+    // | 	fully_specified_type T_Identifier T_LeftParen fn_parameters {
+    //         $$ = new FnDecl(new Identifier(@2, $2), $1, $4);
+    //     }
+    // ;
+
+
+fn_call_parameters
+    :   assignment_expression {($$ = new List<Expr*>())->Append($1);}
+    |   fn_call_parameters T_Comma assignment_expression {($$ = $1)->Append($3);}
+    ;
+
+// function_call_or_method
+//     :	function_call_generic  {};
+//
+// function_call_generic
+//     :	function_call_header_with_parameters T_RightParen {}
+//     |	function_call_header_no_parameters T_RightParen {}
+//     ;
 
 function_call_header_no_parameters
-    :	function_call_header T_Void  {}
-    |	function_call_header  {}
+    :	function_identifier T_LeftParen T_Void  {$$=$1;}
+    |	function_identifier T_LeftParen  {$$=$1;}
     ;
 
-function_call_header_with_parameters
-    :	function_call_header assignment_expression {}
-    | 	function_call_header_with_parameters ',' assignment_expression {}
-    ;
+// function_call_header_with_parameters
+//     :	function_identifier T_LeftParen assignment_expression {
+//             List<Expr*> *e = new List<Expr*>())->Append($2);
+//             Identifier *id = new Identifier(@1, $1->getName())
+//             $$ = new Call(@1, NULL, id, e);
+//         }
+//     | 	function_call_header_with_parameters ',' assignment_expression {
+//         ($$ = $1)->Append($3)
+//     }
+//     ;
 
-function_call_header
-    : 	function_identifier T_LeftParen {};
+// function_call_header
+//     : 	function_identifier T_LeftParen {};
 
 function_identifier
-    : 	type_specifier {}
-    | 	postfix_expression {}
+    : 	type_specifier {$$=$1;}
+    | 	postfix_expression {$$=$1;}
     ;
 
 unary_expression
