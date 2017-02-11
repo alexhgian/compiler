@@ -328,7 +328,10 @@ function_call_header_no_parameters
 //     : 	function_identifier T_LeftParen {};
 
 function_identifier
-    : 	variable_identifier {$$=$1;}
+    : variable_identifier {$$=$1;}
+    | T_Vec2 {$$=new Identifier(@1, "vec2");}
+    | T_Vec3 {$$=new Identifier(@1, "vec3");}
+    | T_Vec4 {$$=new Identifier(@1, "vec4");}
     // | type_specifier {$$=$1;}
     ;
 
