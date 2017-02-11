@@ -224,7 +224,8 @@ void yyerror(const char *msg); // standard error-handling routine
 
 %type <call>                        function_call
 
-
+%nonassoc THEN
+%nonassoc T_Else
 %%
 /* Rules
  * -----
