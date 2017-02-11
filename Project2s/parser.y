@@ -184,14 +184,15 @@ void yyerror(const char *msg); // standard error-handling routine
                 inclusive_or_expression
                 logical_and_expression
                 constant_expression
-                initializer
+
                 conditionopt
                 condition
                 expression_statement
                 declaration_statement
                 for_init_statement
 
-%type <integerConstant> array_specifier
+%type <integerConstant> array_specifier initializer
+
 %type <type>                        fully_specified_type
 %type <type>                        type_specifier
 %type <type>                        type_specifier_nonarray
@@ -551,7 +552,7 @@ type_specifier_nonarray
     ;
 
 initializer
-    : 	assignment_expression {$$=$1;}
+    : 	T_IntConstant {$$=$1;}
     ;
 
 
@@ -621,7 +622,7 @@ selection_rest_statement
 
 condition
     : 	expression {$$=$1;}
-    | 	fully_specified_type T_Identifier T_Equal initializer {
+    | 	fully_specified_type T_Identifier T_Equal assignment_expression {
             $$ = new AssignExpr(
                 new VarExpr(@2, new Identifier(@2, $2)),
                 new Operator(@3, "=="), $4
