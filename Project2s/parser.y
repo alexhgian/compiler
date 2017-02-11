@@ -329,7 +329,7 @@ function_call_header_no_parameters
 
 function_identifier
     : 	type_specifier {$$=$1;}
-    | 	postfix_expression {$$=$1;}
+    | 	variable_identifier {$$=$1;}
     ;
 
 unary_expression
