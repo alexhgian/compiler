@@ -148,13 +148,22 @@ void yyerror(const char *msg); // standard error-handling routine
  * of the union named "declList" which is of type List<Decl*>.
  * pp2: You'll need to add many of these of your own.
  */
+ /*
 %type <declList>  DeclList
+
+%type <decl>      decl*/
+
+%type <program> Program
 %type <decl>      declaration
-%type <decl>      decl
+%type <declList>  translation_unit
+%type <decl> external_declaration
+%type <fnDecl> function_definition
+
 
 %type <ident> variable_identifier
 %type <expr>    primary_expression
-%type <expr>    expression
+%type <expr>    postfix_expression
+%type <expr>    expression unary_expression multiplicative_expression additive_expression
 %type <expr>    assignment_expression
 
 %type <type>                        fully_specified_type
@@ -162,7 +171,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <type>                        type_specifier_nonarray
 %type <fnDecl>                      function_prototype
 %type <fnDecl>                      function_declarator
-%type <varDeclList>                 function_header_with_parameters
+%type <varDeclList>                 fn_parameters
 %type <varDecl>                     parameter_declaration
 
 %type <operators>                   assignment_operator
@@ -181,7 +190,7 @@ void yyerror(const char *msg); // standard error-handling routine
  * %% markers which delimit the Rules section.
 
  */
-Program   :    DeclList            {
+Program   :    translation_unit {
                                       @1;
                                       /* pp2: The @1 is needed to convince
                                        * yacc to set up yylloc. You can remove
@@ -192,14 +201,14 @@ Program   :    DeclList            {
                                           program->Print(0);
                                     }
           ;
-
+/*
 DeclList  :    DeclList decl        { ($$=$1)->Append($2); }
           |    decl                 { ($$ = new List<Decl*>)->Append($1); }
           ;
-decl        :    declaration                   { $$ = $1; }
-            |    function_prototype compound_statement    { $1->SetFunctionBody($2); $$ = $1; }
+decl        :   declaration                   { $$ = $1; }
+            |   function_definition {}
             ;
-
+*/
 variable_identifier :	T_Identifier         { $$ = new Identifier(@1,$1);};
 
 primary_expression 	:	variable_identifier	{}
@@ -209,12 +218,16 @@ primary_expression 	:	variable_identifier	{}
         		   	|	T_LeftParen expression T_RightParen {$$=$2;}
         			;
 
-postfix_expression	:	primary_expression	{/* Fill it */}
-			|	postfix_expression T_LeftBracket integer_expression T_RightBracket {}
-			| 	function_call {}
-			|	postfix_expression T_Dot T_Identifier {/* Need to complete this expression */}
-			|	postfix_expression T_Inc {}
-			|	postfix_expression T_Dec {}
+postfix_expression	:	primary_expression	{$$ = $1;}
+			// |	postfix_expression T_LeftBracket integer_expression T_RightBracket {}
+			// | 	function_call {$$ = $1;}
+			|	postfix_expression T_Dot T_Identifier {$$ = new FieldAccess($1, new Identifier(@3, $3));}
+			|	postfix_expression T_Inc {
+                                          $$ = new PostfixExpr($1, new Operator(@2, "++") );
+                                      }
+			|	postfix_expression T_Dec {
+                                          $$ = new PostfixExpr($1, new Operator(@2, "--"));
+                                      }
 			;
 
 integer_expression			:	expression {/* */};
@@ -241,24 +254,35 @@ function_identifier                  	: 	type_specifier {}
                                      	| 	postfix_expression {}
                                      	;
 
-unary_expression                     	: 	postfix_expression {}
-                                     	| 	T_Inc unary_expression {}
-                                     	| 	T_Dec unary_expression {}
-                                     	| 	unary_operator unary_expression {}
+unary_expression                     	: 	postfix_expression { $$ = $1; }
+                                     	| 	T_Inc unary_expression {
+                                               $$ = new ArithmeticExpr(new Operator(@1, "++"), $2);
+                                            }
+                                     	| 	T_Dec unary_expression {
+                                               $$ = new ArithmeticExpr(new Operator(@1, "--"), $2);
+                                            }
+                                     	| 	unary_operator unary_expression {
+                                                $$ = new ArithmeticExpr($1, $2);
+                                            }
                                      	;
 
-unary_operator                      	:	T_Plus {}
-                                    	|	T_Dash {}
+unary_operator                      	:	T_Plus {$$=new Operator(@1,"+");}
+                                    	|	T_Dash {$$=new Operator(@1,"+");}
                                     	;
 
-multiplicative_expression           	: 	unary_expression {}
-                                    	| 	multiplicative_expression T_Star unary_expression {}
-                                    	| 	multiplicative_expression T_Slash unary_expression {}
+
+multiplicative_expression           	: 	unary_expression {$$ = $1;}
+                                    	| 	multiplicative_expression T_Star unary_expression  { $$ = new ArithmeticExpr($1,new Operator(@2,"*"),$3); }
+                                    	| 	multiplicative_expression T_Slash unary_expression { $$ = new ArithmeticExpr($1,new Operator(@2,"/"),$3); }
                                     	;
 
-additive_expression                 	:	multiplicative_expression  {}
-                                    	| 	additive_expression T_Plus multiplicative_expression {}
-                                    	| 	additive_expression T_Dash multiplicative_expression {}
+additive_expression                 	:	multiplicative_expression  {$$ = $1;}
+                                    	| 	additive_expression T_Plus multiplicative_expression {
+                                                $$ = new ArithmeticExpr($1, new Operator(@2, "+"), $3);
+                                            }
+                                    	| 	additive_expression T_Dash multiplicative_expression {
+                                                $$ = new ArithmeticExpr($1, new Operator(@2, "-"), $3);
+                                            }
                                     	;
 
 shift_expression                    	: 	additive_expression {} ;
@@ -334,16 +358,16 @@ function_prototype                  	: 	function_declarator T_RightParen {}
 function_declarator                 	: 	fully_specified_type T_Identifier T_LeftParen {
                                                 $$ = new FnDecl(new Identifier(@2, $2), $1, new List<VarDecl*>());
                                             }
-                                   	    | 	fully_specified_type T_Identifier T_LeftParen function_header_with_parameters {
+                                   	    | 	fully_specified_type T_Identifier T_LeftParen fn_parameters {
                                                 $$ = new FnDecl(new Identifier(@2, $2), $1, $4);
                                             }
                                     	;
 
 
-function_header_with_parameters     	:   parameter_declaration {
+fn_parameters                           :   parameter_declaration {
                                                 ($$ = new List<VarDecl*>())->Append($1);
                                             }
-                                    	|   function_header_with_parameters T_Comma parameter_declaration {
+                                    	|   fn_parameters T_Comma parameter_declaration {
                                                 ($$ = $1)->Append($3);
                                             }
                                     	;
@@ -467,9 +491,6 @@ condition                           	: 	expression {}
 
 switch_statement                    	: 	T_Switch T_LeftParen expression T_RightParen T_LeftBrace statement_list T_RightBrace {};
 
-switch_statement			:	/* empty */ {}
-					|	statement_list {}
-					;
 
 case_label                          	: 	T_Case expression T_Colon {}
                                     	| 	T_Default T_Colon {}
@@ -498,15 +519,16 @@ jump_statement				:	T_Continue T_Semicolon {}
 					|	T_Return expression T_Semicolon {}
 					;
 
-translation_unit                    	: 	external_declaration {}
-                                    	| 	translation_unit external_declaration  {}
+
+translation_unit                    	: 	external_declaration {($$ = new List<Decl*>)->Append($1);}
+                                    	| 	translation_unit external_declaration  {($$ = $1)->Append($2);}
                                     	;
 
-external_declaration                	: 	function_definition {}
-                                    	| 	declaration {}
+external_declaration                	: 	function_definition {$$ = $1;}
+                                    	| 	declaration {$$ = $1;}
                                     	;
 
-function_definition                 	: 	function_prototype compound_statement {};
+function_definition                 	: 	function_prototype compound_statement {$1->SetFunctionBody($2); $$ = $1;};
 
 
 
