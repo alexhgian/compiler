@@ -608,7 +608,7 @@ expression_statement
     ;
 selection_statement
     : 	T_If T_LeftParen expression T_RightParen statement_with_scope T_Else statement_with_scope  {$$ = new IfStmt($3, $5, $7);}
-    |   T_If T_LeftParen expression T_RightParen statement_with_scope {$$ = new IfStmt($3, $5, NULL);}
+    |   T_If T_LeftParen expression T_RightParen statement_with_scope %prec THEN {$$ = new IfStmt($3, $5, NULL);}
     ;
 
 /* its easier to have this rule in selection_statement since we're passing multiple objects around
