@@ -162,9 +162,23 @@ void yyerror(const char *msg); // standard error-handling routine
 
 %type <ident> variable_identifier
 %type <expr>    primary_expression
-%type <expr>    postfix_expression
-%type <expr>    expression unary_expression multiplicative_expression additive_expression
-%type <expr>    assignment_expression
+                postfix_expression
+                expression
+                unary_expression
+                multiplicative_expression
+                additive_expression
+                shift_expression
+                logical_xor_expression
+                assignment_expression
+                relational_expression
+                equality_expression
+                logical_or_expression
+                conditional_expression
+                exclusive_or_expression
+                and_expression
+                inclusive_or_expression
+                logical_and_expression
+
 
 %type <integerConstant> array_specifier
 %type <type>                        fully_specified_type
@@ -301,52 +315,60 @@ additive_expression
     ;
 
 shift_expression
-    : 	additive_expression {} ;
+    : 	additive_expression {$$=$1;} ;
 
 relational_expression
-    : 	shift_expression {}
-    | 	relational_expression T_LeftAngle shift_expression {}
-    | 	relational_expression T_RightAngle shift_expression {}
-    | 	relational_expression T_LessEqual shift_expression {}
-    | 	relational_expression T_GreaterEqual shift_expression {}
+    : 	shift_expression {$$=$1;}
+    | 	relational_expression T_LeftAngle shift_expression {$$ = new RelationalExpr($1, new Operator(yylloc, "<"), $3);}
+    | 	relational_expression T_RightAngle shift_expression {$$ = new RelationalExpr($1, new Operator(yylloc, ">"), $3);}
+    | 	relational_expression T_LessEqual shift_expression {$$ = new RelationalExpr($1, new Operator(yylloc, "<="), $3);}
+    | 	relational_expression T_GreaterEqual shift_expression {$$ = new RelationalExpr($1, new Operator(yylloc, ">="), $3);}
     ;
 
 equality_expression
-    : 	relational_expression {}
-    | 	equality_expression T_EQ relational_expression {}
-    | 	equality_expression T_NE relational_expression {}
+    : 	relational_expression {$$=$1;}
+    | 	equality_expression T_EQ relational_expression {$$ = new EqualityExpr($1, new Operator(yylloc, "=="), $3);}
+    | 	equality_expression T_NE relational_expression {$$ = new EqualityExpr($1, new Operator(yylloc, "!="), $3);}
     ;
 
+
 and_expression
-    :	equality_expression {};
+    :	equality_expression {$$=$1;};
 
 exclusive_or_expression
-    : 	and_expression {};
+    : 	and_expression {$$=$1;};
 
 inclusive_or_expression
-    : 	exclusive_or_expression {};
+    : 	exclusive_or_expression {$$=$1;};
+
+    /*
+        and_expression
+        exclusive_or_expression
+        inclusive_or_expression
+        are a redundant
+    */
 
 logical_and_expression
-    : 	inclusive_or_expression {}
-    | 	logical_and_expression T_And inclusive_or_expression {}
+    : 	inclusive_or_expression {$$=$1;}
+    | 	logical_and_expression T_And inclusive_or_expression {$$ = new LogicalExpr($1, new Operator(yylloc, "&&"), $3);}
     ;
 
 logical_xor_expression
-    :	logical_and_expression {};
+    :	logical_and_expression {$$=$1;};
 
 logical_or_expression
-    : 	logical_xor_expression {}
-    | 	logical_or_expression T_Or logical_xor_expression {}
+    : 	logical_xor_expression {$$=$1;}
+    | 	logical_or_expression T_Or logical_xor_expression {$$ = new LogicalExpr($1, new Operator(yylloc, "||"), $3);}
 	;
 
 conditional_expression
-    :	logical_or_expression {}
-	|	logical_or_expression T_Question expression T_Colon assignment_expression {}
+    :	logical_or_expression {$$=$1;}
+	// |	logical_or_expression T_Question expression T_Colon assignment_expression {}
 	;
 
 assignment_expression
-    : 	conditional_expression {}
-    | 	unary_expression assignment_operator assignment_expression {}
+    : 	conditional_expression {$$=$1;}
+    | 	unary_expression assignment_operator assignment_expression {$$ = new AssignExpr($1, $2, $3);}
     ;
 
 assignment_operator
