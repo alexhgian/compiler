@@ -1,0 +1,32 @@
+Alex Gian		A11544343	agian@ucsd.edu
+Nazior Rahman 	A11456525	mnrahman@ucsd.edu
+
+
+Project Description:
+
+From where we left off in Assignment 1, we started our syntax analysis using
+using the tokens and the template given in the GLSL specification sheet.
+
+To make our tasks simplified, we tried to follow the trees provided so that we
+exactly know how each rules connects.
+
+Before Writing The Rules:
+First we looked into the header files and added all the necessary fields to the
+unions before writing any rules.
+Then, as we started writing rules, we started including non-terminal types to
+ensure program doesn’t throw any unnecessary warning or errors.
+Next, to make our task easier, we followed the GLSL specifications and created a
+template of all the rules to make our transition easier to code. Although we were
+bit hesitant, but the sole purpose of doing that was to follow exactly what the instruction told us.
+
+Writing Rules:
+As we started writing the rules, we tried to get the identifier, operators and
+other fundamental things done before moving to writing statement rules - as they’re
+very complex. We covered all the the operators highlighted in the specifications,
+as well as identifier and other declarations. We tried to follow the specifications
+as closely as possible, but for the sake of time and simplification we had to merge
+some of the rules together. And in some case create our own rules.
+Along the process we applied test driven development, by running a python script
+provided by one of the students on pizza against test cases against the provided
+binary and our binary. We used this as a guide to complete as many of the
+specifications as we could.
