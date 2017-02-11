@@ -268,7 +268,7 @@ primary_expression
 postfix_expression
     :	primary_expression	{$$ = $1; }
 	|	postfix_expression T_LeftBracket postfix_expression T_RightBracket { $$ = new ArrayAccess(@$, $1, $3);  }
-	// | 	function_call {$$ = $1;}
+	| 	function_call {$$ = $1;}
     |	postfix_expression T_Dot T_Identifier {$$ = new FieldAccess($1, new Identifier(@3, $3));}
     |	postfix_expression T_Inc {$$ = new PostfixExpr($1, new Operator(@2, "++") );}
     |	postfix_expression T_Dec {$$ = new PostfixExpr($1, new Operator(@2, "--"));}
@@ -279,12 +279,11 @@ integer_expression
 
 function_call
     :	function_call_header_no_parameters T_RightParen {
-            Identifier *id = new Identifier(@1, $1->getName())
-            $$ = new Call(@1, NULL, id, new List<Expr*>());
+
+            $$ = new Call(@1, NULL, $1, new List<Expr*>());
         }
     |	function_identifier T_LeftParen fn_call_parameters T_RightParen {
-            Identifier *id = new Identifier(@1, $1->getName())
-            $$ = new Call(@1, NULL, id, $3);
+            $$ = new Call(@1, NULL, $1, $3);
         }
     ;
     //
@@ -328,8 +327,8 @@ function_call_header_no_parameters
 //     : 	function_identifier T_LeftParen {};
 
 function_identifier
-    : 	type_specifier {$$=$1;}
-    | 	variable_identifier {$$=$1;}
+    : 	variable_identifier {$$=$1;}
+    // | type_specifier {$$=$1;}
     ;
 
 unary_expression
