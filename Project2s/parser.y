@@ -166,6 +166,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <expr>    expression unary_expression multiplicative_expression additive_expression
 %type <expr>    assignment_expression
 
+%type <integerConstant> array_specifier
 %type <type>                        fully_specified_type
 %type <type>                        type_specifier
 %type <type>                        type_specifier_nonarray
@@ -180,7 +181,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <stmt>                        compound_statement
 %type <stmtList>                    statement_list
 %type <stmt>                         statement
-%type <stmt>                         simple_statement
+%type <stmt>                         simple_statement jump_statement
 
 
 %%
@@ -216,7 +217,7 @@ variable_identifier
     :	T_Identifier { $$ = new Identifier(@1,$1);};
 
 primary_expression
-    :	variable_identifier	{}
+    :	variable_identifier	{  $$ = new VarExpr(@1, $1); }
     |	T_IntConstant		{$$ = new IntConstant(@1,$1);}
     |	T_FloatConstant		{$$ = new IntConstant(@1,$1);}
     |	T_BoolConstant		{$$ = new BoolConstant(@1,$1);}
@@ -224,8 +225,8 @@ primary_expression
     ;
 
 postfix_expression
-    :	primary_expression	{$$ = $1;}
-	|	postfix_expression T_LeftBracket integer_expression T_RightBracket { $$ = $1; }
+    :	primary_expression	{$$ = $1; }
+	|	postfix_expression T_LeftBracket postfix_expression T_RightBracket { $$ = new ArrayAccess(@$, $1, $3);  }
 	// | 	function_call {$$ = $1;}
     |	postfix_expression T_Dot T_Identifier {$$ = new FieldAccess($1, new Identifier(@3, $3));}
     |	postfix_expression T_Inc {$$ = new PostfixExpr($1, new Operator(@2, "++") );}
@@ -422,7 +423,11 @@ init_declarator_list
 single_declaration
     :	fully_specified_type {} /* not tested i.e `int` or `const`*/
     |	fully_specified_type T_Identifier { $$ = new VarDecl(new Identifier(@2, $2), $1); }
-    |	fully_specified_type T_Identifier array_specifier { $$ = new VarDecl(new Identifier(@2, $2), $1); }
+    |	fully_specified_type T_Identifier array_specifier {
+        $$ = new VarDecl(new Identifier(@2, $2), $1);
+        // ArrayType *arr = new ArrayType($1);
+        // $$ = new VarDecl(new Identifier(@2, $2), arr);
+    }
     |	fully_specified_type T_Identifier T_Equal initializer { $$ = new VarDecl(new Identifier(@2, $2), $1); }
     ;
 
@@ -446,7 +451,7 @@ type_specifier
     ;
 
 array_specifier
-    :	T_LeftBracket T_IntConstant T_RightBracket {};
+    :	T_LeftBracket T_IntConstant T_RightBracket { $$ = $2; };
 
 type_specifier_nonarray
     :	T_Void {$$ = Type::voidType;}
@@ -567,10 +572,10 @@ for_rest_statement
     ;
 
 jump_statement
-    :	T_Continue T_Semicolon {}
-	|	T_Break T_Semicolon {}
-	|	T_Return T_Semicolon {}
-	|	T_Return expression T_Semicolon {}
+    :	T_Continue T_Semicolon { $$ = new BreakStmt(@1);}
+	|	T_Break T_Semicolon {$$ = new BreakStmt(@1);}
+	|	T_Return T_Semicolon {$$ = new ReturnStmt(@1, new EmptyExpr());}
+	|	T_Return expression T_Semicolon {$$ = new ReturnStmt(@1, $2);}
 	;
 
 
