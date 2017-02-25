@@ -49,6 +49,7 @@ struct lessStr {
 };
 
 typedef map<const char *, Symbol, lessStr>::iterator SymbolIterator;
+typedef pair<const char *, Symbol> SymPair;
 
 class ScopedTable {
   map<const char *, Symbol, lessStr> symbols;

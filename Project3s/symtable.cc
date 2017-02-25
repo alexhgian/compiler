@@ -9,7 +9,7 @@
  * ScopedTable
  */
  ScopedTable::ScopedTable(){
-
+     printf("ScopeTable - symbols.size() %d\n", (int)symbols.size());
  }
 
 void ScopedTable::insert(Symbol &sym){
@@ -17,23 +17,34 @@ void ScopedTable::insert(Symbol &sym){
     // using Symbol *find(const char *name);
     // to see if we are redeclaring in the same scope
     // symbol.
-    if( this->find(sym.name) ){
+    SymbolIterator it = symbols.find(sym.name);
+
+    if( it == symbols.end() ){
+        printf("Inserting new decl: %s\n", sym.name);
+        // symbols[sym.name] = sym;
+        symbols.insert(SymPair(sym.name, sym));
+    } else {
         // throw redeclartion error here
-        // ReportError::DeclConflict
-        return;
+        Decl *tmpDecl = this->find(sym.name)->decl;
+        ReportError::DeclConflict(sym.decl, tmpDecl);
+        symbols[sym.name] = sym;
     }
-    symbols.insert(pair<const char *, Symbol>(sym.name, sym));
+
 }
 
 Symbol *ScopedTable::find(const char *name){
-    return NULL;
+    // Search for the symbol
+    SymbolIterator it = symbols.find(name);
+    // dereference the iterator's element (Symbol)
+    return &it->second;
 }
 
 /**
 * SymbolTable
 */
 SymbolTable::SymbolTable(){
-
+    // Create a new scope (global scope)
+    this->push();
 }
 
 void SymbolTable::insert(Symbol &sym){
@@ -41,11 +52,23 @@ void SymbolTable::insert(Symbol &sym){
     st->insert(sym);
     // Push scope table in symbol tab table
 }
-
+void ScopedTable::remove(Symbol &sym){
+    symbols.erase(sym.name);
+}
 void SymbolTable::push(){
     tables.push_back(new ScopedTable());
 }
 
 void SymbolTable::pop(){
     tables.pop_back();
+}
+
+Symbol *SymbolTable::find(const char* name){
+    for(int i = 0; i < tables.size(); i++){
+        Symbol * res = tables[i]->find(name);
+        if(res){
+            return res;
+        }
+    }
+    return NULL;
 }
