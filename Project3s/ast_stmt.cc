@@ -8,6 +8,7 @@
 #include "ast_expr.h"
 #include "errors.h"
 #include "symtable.h"
+#include <string.h>
 
 Program::Program(List<Decl*> *d) {
     Assert(d != NULL);
@@ -72,7 +73,7 @@ void StmtBlock::Check(){
         PrintDebug("stmtCheck", "StmtBlock stmt loop: %s\n",stmts->Nth(i)->GetPrintNameForNode());
 
         // Handle if statement is in function scope or block scope
-        if( std::strcmp(stmts->Nth(i)->GetPrintNameForNode(), "StmtBlock") == 0 ){
+        if( strcmp(stmts->Nth(i)->GetPrintNameForNode(), "StmtBlock") == 0 ){
             PrintDebug("stmtCheck", "StmtBlock creating new scope\n");
             // ----- START block scope -----
             symbolTable->push();
