@@ -72,7 +72,7 @@ void StmtBlock::Check(){
         PrintDebug("stmtCheck", "StmtBlock stmt loop: %s\n",stmts->Nth(i)->GetPrintNameForNode());
 
         // Handle if statement is in function scope or block scope
-        if(stmts->Nth(i)->GetPrintNameForNode() == "StmtBlock"){
+        if( std::strcmp(stmts->Nth(i)->GetPrintNameForNode(), "StmtBlock") ){
             // ----- START block scope -----
             symbolTable->push();
             stmts->Nth(i)->Check();
@@ -173,6 +173,10 @@ void ReturnStmt::PrintChildren(int indentLevel) {
       expr->Print(indentLevel+1);
 }
 
+void ReturnStmt::Check(){
+    PrintDebug("stmtCheck", "ReturnStmt %s\n",  expr->GetPrintNameForNode());
+    // ReportError::ReturnMismatch(this, givenType, expectedType);
+}
 
 /*
 * SwitchLabel
