@@ -41,10 +41,9 @@ void VarDecl::PrintChildren(int indentLevel) {
 }
 
 void VarDecl::Check(){
-
     Identifier *id = this->GetIdentifier();
     Symbol tmpSym(id->GetName(), this, E_VarDecl, 0);
-    printf("VarDecl Check(): %s\n",id->GetName() );
+    // printf("VarDecl Check(): %s\n",id->GetName() );
     symbolTable->insert(tmpSym);
 }
 
@@ -76,4 +75,11 @@ void FnDecl::PrintChildren(int indentLevel) {
     if (id) id->Print(indentLevel+1);
     if (formals) formals->PrintAll(indentLevel+1, "(formals) ");
     if (body) body->Print(indentLevel+1, "(body) ");
+}
+
+void FnDecl::Check(){
+    Identifier *id = this->GetIdentifier();
+    Symbol tmpSym(id->GetName(), this, E_FunctionDecl, 0);
+    // printf("VarDecl Check(): %s\n",id->GetName() );
+    symbolTable->insert(tmpSym);
 }
