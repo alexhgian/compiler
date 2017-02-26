@@ -79,24 +79,26 @@ void FnDecl::PrintChildren(int indentLevel) {
 
 void FnDecl::Check(){
     // Handle function decl
+    // Prepare symbol for insertion
     Identifier *id = this->GetIdentifier();
     Symbol tmpSym(id->GetName(), this, E_FunctionDecl, 0);
     // printf("VarDecl Check(): %s\n",id->GetName() );
-    symbolTable->insert(tmpSym);
+    symbolTable->insert(tmpSym); // handles DeclConflict
 
 
-    // START function scope
+    // ----- START function scope -----
     symbolTable->push();
 
     // Check function formals (VarDecl)
     int size = formals->NumElements();
     for (int i = 0; i < size; i++){
-        formals->Nth(i)->Check();
+        formals->Nth(i)->Check(); // handles DeclConflict
     }
 
     // Check body (Stmt)
+    body->Check();
 
     symbolTable->pop();
-    // END function scope
+    // ----- END function scope -----
 
 }
