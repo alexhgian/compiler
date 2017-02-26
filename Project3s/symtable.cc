@@ -30,7 +30,7 @@ void ScopedTable::insert(Symbol &sym){
     SymbolIterator it = symbols.find(sym.name);
 
     if( it == symbols.end() ){
-        printf("Inserting new decl: %s\n", sym.name);
+        // printf("Inserting new decl: %s\n", sym.name);
         // symbols[sym.name] = sym;
         symbols.insert(SymPair(sym.name, sym));
     } else {

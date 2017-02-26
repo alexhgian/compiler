@@ -81,6 +81,8 @@ class FnDecl : public Decl
 
     Type *GetType() const { return returnType; }
     List<VarDecl*> *GetFormals() {return formals;}
+
+    void Check();
 };
 
 class FormalsError : public FnDecl
