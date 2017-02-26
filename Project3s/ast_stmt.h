@@ -76,7 +76,7 @@ class ConditionalStmt : public Stmt
   public:
     ConditionalStmt() : Stmt(), test(NULL), body(NULL) {}
     ConditionalStmt(Expr *testExpr, Stmt *body);
-
+    // void Check() = 0;
 };
 
 class LoopStmt : public ConditionalStmt
@@ -117,7 +117,7 @@ class IfStmt : public ConditionalStmt
     IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
     const char *GetPrintNameForNode() { return "IfStmt"; }
     void PrintChildren(int indentLevel);
-
+    void Check();
 };
 
 class IfStmtExprError : public IfStmt

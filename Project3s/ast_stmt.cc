@@ -64,7 +64,7 @@ void StmtBlock::Check(){
     int numOfDecls = decls->NumElements();
     for (int i = 0; i < numOfDecls; i++){
         decls->Nth(i)->Check();
-        // PrintDebug("stmtCheck", "StmtBlock decl loop: %s\n",decls->Nth(i)->GetIdentifier());
+        PrintDebug("stmtCheck", "StmtBlock decl loop: %s\n",decls->Nth(i)->GetIdentifier());
     }
 
     int numOfStmt = stmts->NumElements();
@@ -72,7 +72,8 @@ void StmtBlock::Check(){
         PrintDebug("stmtCheck", "StmtBlock stmt loop: %s\n",stmts->Nth(i)->GetPrintNameForNode());
 
         // Handle if statement is in function scope or block scope
-        if( std::strcmp(stmts->Nth(i)->GetPrintNameForNode(), "StmtBlock") ){
+        if( std::strcmp(stmts->Nth(i)->GetPrintNameForNode(), "StmtBlock") == 0 ){
+            PrintDebug("stmtCheck", "StmtBlock creating new scope\n");
             // ----- START block scope -----
             symbolTable->push();
             stmts->Nth(i)->Check();
@@ -158,7 +159,18 @@ void IfStmt::PrintChildren(int indentLevel) {
     if (body) body->Print(indentLevel+1, "(then) ");
     if (elseBody) elseBody->Print(indentLevel+1, "(else) ");
 }
+void IfStmt::Check() {
+    PrintDebug("stmtCheck", "IfStmt %s\n",  body->GetPrintNameForNode());
+    symbolTable->push();
+    body->Check();
+    symbolTable->pop();
 
+    if(elseBody){
+        symbolTable->push();
+        elseBody->Check();
+        symbolTable->pop();
+    }
+}
 
 /*
 * ReturnStmt
@@ -174,7 +186,7 @@ void ReturnStmt::PrintChildren(int indentLevel) {
 }
 
 void ReturnStmt::Check(){
-    PrintDebug("stmtCheck", "ReturnStmt %s\n",  expr->GetPrintNameForNode());
+    // PrintDebug("stmtCheck", "ReturnStmt %s\n",  expr->GetPrintNameForNode());
     // ReportError::ReturnMismatch(this, givenType, expectedType);
 }
 
