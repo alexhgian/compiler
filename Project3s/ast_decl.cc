@@ -95,8 +95,12 @@ void FnDecl::Check(){
         formals->Nth(i)->Check(); // handles DeclConflict
     }
 
-    // Check body (Stmt)
-    body->Check();
+    if(body != NULL){
+         SetDebugForKey("decl", false);
+         PrintDebug("decl", "fn body\n");
+        // Check body (Stmt)
+        body->Check();
+    }
 
     symbolTable->pop();
     // ----- END function scope -----

@@ -12,6 +12,7 @@
 Program::Program(List<Decl*> *d) {
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
+    SetDebugForKey("stmtCheck", false);
 }
 
 void Program::PrintChildren(int indentLevel) {
@@ -20,6 +21,7 @@ void Program::PrintChildren(int indentLevel) {
 }
 
 void Program::Check() {
+     PrintDebug("stmtCheck", "Program::Check()\n");
     /* pp3: here is where the semantic analyzer is kicked off.
      *      The general idea is perform a tree traversal of the
      *      entire program, examining all constructs for compliance
@@ -57,16 +59,29 @@ void StmtBlock::PrintChildren(int indentLevel) {
 * Check()
 */
 void StmtBlock::Check(){
-    // ----- START block scope -----
-    // symbolTable->push();
+     PrintDebug("stmtCheck", "StmtBlock::Check()\n");
 
-    int size = stmts->NumElements();
-    for (int i = 0; i < size; i++){
-        stmts->Nth(i)->Check();
+    int numOfDecls = decls->NumElements();
+    for (int i = 0; i < numOfDecls; i++){
+        decls->Nth(i)->Check();
+        // PrintDebug("stmtCheck", "StmtBlock decl loop: %s\n",decls->Nth(i)->GetIdentifier());
     }
 
-    // symbolTable->pop();
-    // ----- END block scope -----
+    int numOfStmt = stmts->NumElements();
+    for (int i = 0; i < numOfStmt; i++){
+        PrintDebug("stmtCheck", "StmtBlock stmt loop: %s\n",stmts->Nth(i)->GetPrintNameForNode());
+
+        // Handle if statement is in function scope or block scope
+        if(stmts->Nth(i)->GetPrintNameForNode() == "StmtBlock"){
+            // ----- START block scope -----
+            symbolTable->push();
+            stmts->Nth(i)->Check();
+            symbolTable->pop();
+            // ----- END block scope -----
+        } else {
+            stmts->Nth(i)->Check();
+        }
+    }
 }
 
 /*
@@ -82,6 +97,7 @@ void DeclStmt::PrintChildren(int indentLevel) {
 }
 
 void DeclStmt::Check(){
+    PrintDebug("stmtCheck", "DeclStmt::Check()\n");
     decl->Check();
 }
 

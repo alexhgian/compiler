@@ -53,6 +53,7 @@ typedef pair<const char *, Symbol> SymPair;
 
 class ScopedTable {
   map<const char *, Symbol, lessStr> symbols;
+  Symbol * lastSymbol;
 
   public:
     ScopedTable();
@@ -61,6 +62,7 @@ class ScopedTable {
     void insert(Symbol &sym);
     void remove(Symbol &sym);
     Symbol *find(const char *name);
+    Symbol *last(){ return lastSymbol; };
 };
 
 class SymbolTable {
@@ -78,6 +80,7 @@ class SymbolTable {
     void remove(Symbol &sym);
     Symbol *find(const char *name);
 
+    ScopedTable* currentScope(){return tables.back();}
 };
 
 class MyStack {

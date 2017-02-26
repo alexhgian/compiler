@@ -33,13 +33,12 @@ void ScopedTable::insert(Symbol &sym){
     if( it == symbols.end() ){
         // printf("Inserting new decl: %s\n", sym.name);
         // symbols[sym.name] = sym;
-        symbols.insert(SymPair(sym.name, sym));
     } else {
         // throw redeclartion error here
         Decl *tmpDecl = this->find(sym.name)->decl;
         ReportError::DeclConflict(sym.decl, tmpDecl);
-        symbols[sym.name] = sym;
     }
+    symbols.insert(SymPair(sym.name, sym));
 
 }
 
