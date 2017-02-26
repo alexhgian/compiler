@@ -56,19 +56,22 @@ void StmtBlock::PrintChildren(int indentLevel) {
 /**
 * Check()
 */
-// void StmtBlock::Check(){
-    // // ----- START block scope -----
+void StmtBlock::Check(){
+    // ----- START block scope -----
     // symbolTable->push();
 
-    // int size = stmts->NumElements();
-    // for (int i = 0; i < size; i++){
-    //     stmts->Nth(i)->Check();
-    // }
+    int size = stmts->NumElements();
+    for (int i = 0; i < size; i++){
+        stmts->Nth(i)->Check();
+    }
 
     // symbolTable->pop();
-    // // ----- END block scope -----
-// }
+    // ----- END block scope -----
+}
 
+/*
+* DeclStmt
+*/
 DeclStmt::DeclStmt(Decl *d) {
     Assert(d != NULL);
     (decl=d)->SetParent(this);
@@ -78,21 +81,25 @@ void DeclStmt::PrintChildren(int indentLevel) {
     decl->Print(indentLevel+1);
 }
 
+void DeclStmt::Check(){
+    decl->Check();
+}
 
-/**
-* Check()
+
+/*
+* ConditionalStmt
 */
-// void DeclStmt::Check(){
-//     decl->Check();
-// }
-
-
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
     Assert(t != NULL && b != NULL);
     (test=t)->SetParent(this);
     (body=b)->SetParent(this);
 }
 
+
+
+/*
+* ForStmt
+*/
 ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) {
     Assert(i != NULL && t != NULL && b != NULL);
     (init=i)->SetParent(this);
@@ -109,11 +116,21 @@ void ForStmt::PrintChildren(int indentLevel) {
     body->Print(indentLevel+1, "(body) ");
 }
 
+
+
+/*
+* WhileStmt
+*/
 void WhileStmt::PrintChildren(int indentLevel) {
     test->Print(indentLevel+1, "(test) ");
     body->Print(indentLevel+1, "(body) ");
 }
 
+
+
+/*
+* IfStmt
+*/
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
     Assert(t != NULL && tb != NULL); // else can be NULL
     elseBody = eb;
@@ -127,6 +144,9 @@ void IfStmt::PrintChildren(int indentLevel) {
 }
 
 
+/*
+* ReturnStmt
+*/
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
     expr = e;
     if (e != NULL) expr->SetParent(this);
@@ -137,6 +157,10 @@ void ReturnStmt::PrintChildren(int indentLevel) {
       expr->Print(indentLevel+1);
 }
 
+
+/*
+* SwitchLabel
+*/
 SwitchLabel::SwitchLabel(Expr *l, Stmt *s) {
     Assert(l != NULL && s != NULL);
     (label=l)->SetParent(this);
