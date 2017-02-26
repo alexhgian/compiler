@@ -3,7 +3,7 @@
  * author: Alex Gian, Nazior Rahman
  */
 #include "symtable.h"
-
+#include "utility.h"
 
  /**
  * ScopedTable
@@ -15,7 +15,8 @@
  * [x] find
  */
  ScopedTable::ScopedTable(){
-     printf("Init ScopeTable - symbols.size() %d\n", (int)symbols.size());
+     SetDebugForKey("symtable", false);
+     PrintDebug("symtable", "Init ScopeTable - symbols.size() %d\n", (int)symbols.size());
  }
 
  ScopedTable::~ScopedTable(){
