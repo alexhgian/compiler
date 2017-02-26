@@ -33,8 +33,9 @@ void Program::Check() {
     if ( decls->NumElements() > 0 ) {
       for ( int i = 0; i < decls->NumElements(); ++i ) {
         Decl *d = decls->Nth(i);
+        d->Check();
         /* !!! YOUR CODE HERE !!!
-         * Basically you have to make sure that each declaration is 
+         * Basically you have to make sure that each declaration is
          * semantically correct.
          */
       }
@@ -61,13 +62,13 @@ void DeclStmt::PrintChildren(int indentLevel) {
     decl->Print(indentLevel+1);
 }
 
-ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) { 
+ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
     Assert(t != NULL && b != NULL);
-    (test=t)->SetParent(this); 
+    (test=t)->SetParent(this);
     (body=b)->SetParent(this);
 }
 
-ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) { 
+ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) {
     Assert(i != NULL && t != NULL && b != NULL);
     (init=i)->SetParent(this);
     step = s;
@@ -88,7 +89,7 @@ void WhileStmt::PrintChildren(int indentLevel) {
     body->Print(indentLevel+1, "(body) ");
 }
 
-IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) { 
+IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
     Assert(t != NULL && tb != NULL); // else can be NULL
     elseBody = eb;
     if (elseBody) elseBody->SetParent(this);
@@ -101,13 +102,13 @@ void IfStmt::PrintChildren(int indentLevel) {
 }
 
 
-ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) { 
+ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
     expr = e;
     if (e != NULL) expr->SetParent(this);
 }
 
 void ReturnStmt::PrintChildren(int indentLevel) {
-    if ( expr ) 
+    if ( expr )
       expr->Print(indentLevel+1);
 }
 
@@ -141,4 +142,3 @@ void SwitchStmt::PrintChildren(int indentLevel) {
     if (cases) cases->PrintAll(indentLevel+1);
     if (def) def->Print(indentLevel+1);
 }
-

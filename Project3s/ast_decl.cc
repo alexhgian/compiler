@@ -10,10 +10,6 @@
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
     (id=n)->SetParent(this);
-
-
-    Symbol tmpSym(n->GetName(), this, E_VarDecl, 0);
-    symbolTable->insert(tmpSym);
 }
 
 VarDecl::VarDecl(Identifier *n, Type *t, Expr *e) : Decl(n) {
@@ -43,6 +39,17 @@ void VarDecl::PrintChildren(int indentLevel) {
    if (id) id->Print(indentLevel+1);
    if (assignTo) assignTo->Print(indentLevel+1, "(initializer) ");
 }
+
+void VarDecl::Check(){
+
+    Identifier *id = this->GetIdentifier();
+    Symbol tmpSym(id->GetName(), this, E_VarDecl, 0);
+    printf("VarDecl Check(): %s\n",id->GetName() );
+    symbolTable->insert(tmpSym);
+}
+
+
+
 
 FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n) {
     Assert(n != NULL && r!= NULL && d != NULL);
