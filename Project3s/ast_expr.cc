@@ -175,7 +175,16 @@ Type* LValue::checkType(){
 
     return NULL;
 }
-
+Type* LogicalExpr::checkType(){
+    Type* lType = left->checkType();
+    Type* rType = right->checkType();
+    if ((lType->IsBool() && lType->IsEquivalentTo(rType)) || (lType->IsError() && rType->IsBool()) || (lType->IsError() && rType->IsError())) {
+        return Type::boolType;
+    } else {
+        ReportError::IncompatibleOperands(op, lType, rType);
+        return Type::errorType;
+    }
+}
 Type* AssignExpr::checkType(){
     PrintDebug("expr", "AssignExpr::checkType()\n");
 
@@ -183,24 +192,31 @@ Type* AssignExpr::checkType(){
 }
 Type* PostfixExpr::checkType(){
     PrintDebug("expr", "PostfixExpr::checkType()\n");
-    return NULL;
+    Type* lType = left->checkType();
+
+    if ( lType->IsNumeric() || lType->IsError()) {
+        return lType;
+    } else {
+        ReportError::IncompatibleOperand(op, lType);
+        return Type::errorType;
+    }
 }
 Type* ArithmeticExpr::checkType(){
     PrintDebug("expr", "ArithmeticExpr::checkType()\n");
     Type* lType = left->checkType();
-    // Type* rType = right->checkType();
-    // PrintDebug("expr", "ArithmeticExpr::checkType() %s | %s\n", lType->GetPrintNameForNode(), rType->GetPrintNameForNode());
-    // if (lType->IsConvertibleTo(rType)) {
-    //     return lType;
-    // } else {
-    //     ReportError::IncompatibleOperands(op, lType, rType);
-    //     return Type::errorType;
-    // }
+    Type* rType = right->checkType();
+    PrintDebug("expr", "ArithmeticExpr::checkType() %s | %s | %d\n", lType->getTypeName(), rType->getTypeName(), lType->IsConvertibleTo(rType));
+    if (lType->IsConvertibleTo(rType)) {
+        return lType;
+    } else {
+        ReportError::IncompatibleOperands(op, lType, rType);
+        return Type::errorType;
+    }
 
-    return Type::errorType;
 }
 Type* RelationalExpr::checkType(){
     PrintDebug("expr", "RelationalExpr::checkType()\n");
-
+    Type* lType = left->checkType();
+    Type* rType = right->checkType();
     return NULL;
 }

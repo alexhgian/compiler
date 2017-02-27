@@ -180,8 +180,9 @@ void WhileStmt::PrintChildren(int indentLevel) {
 }
 
 void WhileStmt::Check() {
-  // if (!test->CheckAndGetType()->IsBool())
-  //   ReportError::TestNotBoolean(test);
+  if (!test->checkType()->IsBool()) {
+      ReportError::TestNotBoolean(test);
+  }
 
   symbolTable->push();
 
@@ -238,7 +239,7 @@ void ReturnStmt::Check(){
     // PrintDebug("stmtCheck", "fn type: %s\n", expect->getTypeName());
     // PrintDebug("stmtCheck", "ReturnStmt %s | %s\n", actual->GetPrintNameForNode(), actual->getTypeName());
     if(!expect->IsEquivalentTo(actual)){
-        ReportError::ReturnMismatch(this, Type::errorType, Type::errorType);
+        ReportError::ReturnMismatch(this, expect, actual);
     }
 }
 
@@ -264,7 +265,7 @@ void SwitchLabel::PrintChildren(int indentLevel) {
 
 void Case::Check(){
   // Type* testExprType = NULL;
-  // Type* labelType = label->CheckAndGetType();
+  Type* type = label->checkType();
   stmt->Check();
 }
 void Default::Check(){
