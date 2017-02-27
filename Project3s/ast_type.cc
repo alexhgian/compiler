@@ -6,7 +6,7 @@
 #include <string.h>
 #include "ast_type.h"
 #include "ast_decl.h"
- 
+
 /* Class constants
  * ---------------
  * These are public constants for the built-in base types (int, double, etc.)
@@ -35,7 +35,7 @@ Type *Type::uintType = new Type("uint");
 Type *Type::uvec2Type = new Type("uvec2");
 Type *Type::uvec3Type = new Type("uvec3");
 Type *Type::uvec4Type = new Type("uvec4");
-Type *Type::errorType  = new Type("error"); 
+Type *Type::errorType  = new Type("error");
 
 TypeQualifier *TypeQualifier::inTypeQualifier  = new TypeQualifier("in");
 TypeQualifier *TypeQualifier::outTypeQualifier = new TypeQualifier("out");
@@ -60,30 +60,34 @@ void TypeQualifier::PrintChildren(int indentLevel) {
     printf("%s", typeQualifierName);
 }
 
-bool Type::IsNumeric() { 
+bool Type::IsBool(){
+    return this->IsEquivalentTo(Type::boolType);
+}
+
+bool Type::IsNumeric() {
     return this->IsEquivalentTo(Type::intType) || this->IsEquivalentTo(Type::floatType);
 }
 
-bool Type::IsVector() { 
-    return this->IsEquivalentTo(Type::vec2Type) || 
-           this->IsEquivalentTo(Type::vec3Type) ||  
+bool Type::IsVector() {
+    return this->IsEquivalentTo(Type::vec2Type) ||
+           this->IsEquivalentTo(Type::vec3Type) ||
            this->IsEquivalentTo(Type::vec4Type);
 }
 
-bool Type::IsMatrix() { 
-    return this->IsEquivalentTo(Type::mat2Type) || 
-           this->IsEquivalentTo(Type::mat3Type) ||  
+bool Type::IsMatrix() {
+    return this->IsEquivalentTo(Type::mat2Type) ||
+           this->IsEquivalentTo(Type::mat3Type) ||
            this->IsEquivalentTo(Type::mat4Type);
 }
 
-bool Type::IsError() { 
+bool Type::IsError() {
     return this->IsEquivalentTo(Type::errorType);
 }
-	
+
 NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
     Assert(i != NULL);
     (id=i)->SetParent(this);
-} 
+}
 
 void NamedType::PrintChildren(int indentLevel) {
     id->Print(indentLevel+1);
@@ -97,5 +101,3 @@ ArrayType::ArrayType(yyltype loc, Type *et, int ec) : Type(loc) {
 void ArrayType::PrintChildren(int indentLevel) {
     elemType->Print(indentLevel+1);
 }
-
-

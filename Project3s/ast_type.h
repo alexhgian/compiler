@@ -3,12 +3,12 @@
  * In our parse tree, Type nodes are used to represent and
  * store type information. The base Type class is used
  * for built-in types, the NamedType for classes and interfaces,
- * and the ArrayType for arrays of other types.  
+ * and the ArrayType for arrays of other types.
  *
  * pp3: You will need to extend the Type classes to implement
  * the type system and rules for type equivalency and compatibility.
  */
- 
+
 #ifndef _H_ast_type
 #define _H_ast_type
 
@@ -33,7 +33,7 @@ class TypeQualifier : public Node
     void PrintChildren(int indentLevel);
 };
 
-class Type : public Node 
+class Type : public Node
 {
   protected:
     char *typeName;
@@ -43,13 +43,13 @@ class Type : public Node
                 *vec2Type, *vec3Type, *vec4Type,
                 *mat2Type, *mat3Type, *mat4Type,
                 *ivec2Type, *ivec3Type, *ivec4Type,
-                *bvec2Type, *bvec3Type, *bvec4Type, 
-                *uvec2Type, *uvec3Type,*uvec4Type, 
+                *bvec2Type, *bvec3Type, *bvec4Type,
+                *uvec2Type, *uvec3Type,*uvec4Type,
                 *errorType;
 
     Type(yyltype loc) : Node(loc) {}
     Type(const char *str);
-    
+
     const char *GetPrintNameForNode() { return "Type"; }
     void PrintChildren(int indentLevel);
 
@@ -57,6 +57,7 @@ class Type : public Node
     friend ostream& operator<<(ostream& out, Type *t) { t->PrintToStream(out); return out; }
     virtual bool IsEquivalentTo(Type *other) { return (this == other); }
     virtual bool IsConvertibleTo(Type *other) { return (this == other || this == errorType); }
+    bool IsBool(); 
     bool IsNumeric();
     bool IsVector();
     bool IsMatrix();
@@ -64,20 +65,20 @@ class Type : public Node
 };
 
 
-class NamedType : public Type 
+class NamedType : public Type
 {
   protected:
     Identifier *id;
-    
+
   public:
     NamedType(Identifier *i);
-    
+
     const char *GetPrintNameForNode() { return "NamedType"; }
     void PrintChildren(int indentLevel);
     void PrintToStream(ostream& out) { out << id; }
 };
 
-class ArrayType : public Type 
+class ArrayType : public Type
 {
   protected:
     Type *elemType;
@@ -85,12 +86,12 @@ class ArrayType : public Type
 
   public:
     ArrayType(yyltype loc, Type *elemType, int elemCount);
-    
+
     const char *GetPrintNameForNode() { return "ArrayType"; }
     void PrintChildren(int indentLevel);
     void PrintToStream(ostream& out) { out << elemType << "[]"; }
     Type *GetElemType() {return elemType;}
 };
 
- 
+
 #endif

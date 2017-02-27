@@ -133,8 +133,20 @@ void ForStmt::PrintChildren(int indentLevel) {
       step->Print(indentLevel+1, "(step) ");
     body->Print(indentLevel+1, "(body) ");
 }
+void ForStmt::Check() {
+  // init->Check();
 
+    // bool isBool = test->checkType()->IsBool();
+    // if (!isBool) {
+    //     ReportError::TestNotBoolean(test);
+    // }
 
+  // step->Check();
+
+  symbolTable->push();
+  body->Check();
+  symbolTable->pop();
+}
 
 /*
 * WhileStmt
