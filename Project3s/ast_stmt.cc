@@ -13,7 +13,7 @@
 Program::Program(List<Decl*> *d) {
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
-    SetDebugForKey("stmtCheck", true);
+    SetDebugForKey("stmtCheck", false);
 }
 
 void Program::PrintChildren(int indentLevel) {
@@ -107,7 +107,6 @@ void DeclStmt::Check(){
 * TODO:
 */
 void BreakStmt::Check() {
-
     bool canBreak = symbolTable->isBreakable();
     PrintDebug("stmtCheck", "breakable %d\n", canBreak);
     if (!canBreak){
@@ -165,8 +164,8 @@ void ForStmt::Check() {
 
   symbolTable->push();
 
-  symbolTable->setBreakable();
-  symbolTable->setContinuable();
+  symbolTable->setBreakable(true);
+  symbolTable->setContinuable(true);
 
   body->Check();
   symbolTable->pop();
@@ -186,8 +185,8 @@ void WhileStmt::Check() {
 
   symbolTable->push();
 
-  symbolTable->setBreakable();
-  symbolTable->setContinuable();
+  symbolTable->setBreakable(true);
+  symbolTable->setContinuable(true);
 
   body->Check();
   symbolTable->pop();
@@ -289,6 +288,7 @@ void SwitchStmt::Check() {
     // check expression
     // switch scope
     // symbolTable->push();
+    symbolTable->setBreakable(true);
 
     int size = cases->NumElements();
     for (int i = 0; i < size; i++) {
@@ -298,6 +298,6 @@ void SwitchStmt::Check() {
     if (def) {
         def->Check();
     }
-
+    symbolTable->setBreakable(false);
     // symbolTable->pop();
 }

@@ -90,10 +90,10 @@ class SymbolTable {
     FnDecl* getLastFn(){return lastFn; }
 
     bool isBreakable() { return tables.back()->isBreakable(); }
-    void setBreakable(){ tables.back()->setBreakable(true); }
+    void setBreakable(bool val){ tables.back()->setBreakable(val); }
 
     bool isContinuable() { return tables.back()->isContinuable(); }
-    void setContinuable(){ tables.back()->setContinuable(true); }
+    void setContinuable(bool val){ tables.back()->setContinuable(val); }
 };
 
 class MyStack {
