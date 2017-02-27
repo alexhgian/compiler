@@ -220,3 +220,28 @@ Type* RelationalExpr::checkType(){
     Type* rType = right->checkType();
     return NULL;
 }
+Type* CompoundExpr::checkType() {
+
+    if(right && !left){
+        Type* rType = right->checkType();
+
+        if (rType->IsNumeric() || rType->IsVector() || rType->IsMatrix() || rType->IsError()) {
+          return rType;
+        } else {
+          ReportError::IncompatibleOperand(op, rType);
+          return Type::errorType;
+        }
+    } else if(!right && left){ 
+        Type* lType = left->checkType();
+
+        if (lType->IsNumeric() || lType->IsVector() || lType->IsMatrix() || lType->IsError()) {
+          return lType;
+        } else {
+          ReportError::IncompatibleOperand(op, lType);
+          return Type::errorType;
+        }
+    } else {
+        return Type::errorType;
+    }
+
+}
