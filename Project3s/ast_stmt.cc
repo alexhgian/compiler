@@ -156,7 +156,14 @@ void WhileStmt::PrintChildren(int indentLevel) {
     body->Print(indentLevel+1, "(body) ");
 }
 
+void WhileStmt::Check() {
+  // if (!test->CheckAndGetType()->IsBool())
+  //   ReportError::TestNotBoolean(test);
 
+  symbolTable->push();
+  body->Check();
+  symbolTable->pop();
+}
 
 /*
 * IfStmt
