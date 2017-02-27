@@ -13,7 +13,7 @@
 Program::Program(List<Decl*> *d) {
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
-    SetDebugForKey("stmtCheck", false);
+    SetDebugForKey("stmtCheck", true);
 }
 
 void Program::PrintChildren(int indentLevel) {
@@ -81,7 +81,6 @@ void StmtBlock::Check(){
             symbolTable->pop();
             // ----- END block scope -----
         } else {
-            symbolTable->setBreakable();
             stmts->Nth(i)->Check();
         }
     }
@@ -108,9 +107,12 @@ void DeclStmt::Check(){
 * TODO:
 */
 void BreakStmt::Check() {
-  if (symbolTable->isBreakable()){
+
+    bool canBreak = symbolTable->isBreakable();
+    PrintDebug("stmtCheck", "breakable %d\n", canBreak);
+    if (!canBreak){
       ReportError::BreakOutsideLoop(this);
-  }
+    }
 }
 
 /*
@@ -126,8 +128,11 @@ ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
 * TODO:
 */
 void ContinueStmt::Check() {
-  // if (!Scope::current->ContinueAllowed())
-  //   ReportError::ContinueOutsideLoop(this);
+    bool canCont = symbolTable->isContinuable();
+    PrintDebug("stmtCheck", "continuable %d\n", canCont);
+    if (!canCont){
+      ReportError::ContinueOutsideLoop(this);
+    }
 }
 
 /*
@@ -159,6 +164,10 @@ void ForStmt::Check() {
   // step->Check();
 
   symbolTable->push();
+
+  symbolTable->setBreakable();
+  symbolTable->setContinuable();
+
   body->Check();
   symbolTable->pop();
 }
@@ -176,6 +185,10 @@ void WhileStmt::Check() {
   //   ReportError::TestNotBoolean(test);
 
   symbolTable->push();
+
+  symbolTable->setBreakable();
+  symbolTable->setContinuable();
+
   body->Check();
   symbolTable->pop();
 }
