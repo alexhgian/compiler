@@ -13,7 +13,7 @@
 Program::Program(List<Decl*> *d) {
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
-    SetDebugForKey("stmtCheck", true);
+    SetDebugForKey("stmtCheck", false);
 }
 
 void Program::PrintChildren(int indentLevel) {

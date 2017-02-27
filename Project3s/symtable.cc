@@ -75,7 +75,7 @@ SymbolTable::SymbolTable(){
 * Adds a symbol into the symbol table (map)
 */
 void SymbolTable::insert(Symbol &sym){
-    SetDebugForKey("symtable", true);
+    SetDebugForKey("symtable", false);
     // PrintDebug("symtable","Function\n");
     if(sym.kind == E_FunctionDecl){
         PrintDebug("symtable","Function: %s\n", sym.name);

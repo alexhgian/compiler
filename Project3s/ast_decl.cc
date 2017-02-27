@@ -96,8 +96,8 @@ void FnDecl::Check(){
     }
 
     if(body != NULL){
-         SetDebugForKey("decl", true);
-         PrintDebug("decl", "fn body\n");
+        //  SetDebugForKey("decl", false);
+        //  PrintDebug("decl", "fn body\n");
         // Check body (Stmt)
         body->Check();
     }

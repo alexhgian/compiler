@@ -7,5 +7,8 @@ void main(){
         case 1:
             int x = 2;
             break;
+        default:
+            int x = 1;
+            break;
     }
 }
