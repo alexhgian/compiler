@@ -214,6 +214,16 @@ void SwitchLabel::PrintChildren(int indentLevel) {
     if (stmt)  stmt->Print(indentLevel+1);
 }
 
+void Case::Check(){
+  // Type* testExprType = NULL;
+  // Type* labelType = label->CheckAndGetType();
+  stmt->Check();
+}
+void Default::Check(){
+  stmt->Check();
+}
+
+
 SwitchStmt::SwitchStmt(Expr *e, List<Stmt *> *c, Default *d) {
     Assert(e != NULL && c != NULL && c->NumElements() != 0 );
     (expr=e)->SetParent(this);
@@ -231,7 +241,7 @@ void SwitchStmt::PrintChildren(int indentLevel) {
 void SwitchStmt::Check() {
     // check expression
     // switch scope
-    symbolTable->push();
+    // symbolTable->push();
 
     int size = cases->NumElements();
     for (int i = 0; i < size; i++) {
@@ -241,6 +251,6 @@ void SwitchStmt::Check() {
     if (def) {
         def->Check();
     }
-    
-    symbolTable->pop();
+
+    // symbolTable->pop();
 }
