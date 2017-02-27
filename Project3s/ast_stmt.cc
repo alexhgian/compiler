@@ -81,6 +81,7 @@ void StmtBlock::Check(){
             symbolTable->pop();
             // ----- END block scope -----
         } else {
+            symbolTable->setBreakable();
             stmts->Nth(i)->Check();
         }
     }
@@ -103,6 +104,14 @@ void DeclStmt::Check(){
     decl->Check();
 }
 
+/**
+* TODO:
+*/
+void BreakStmt::Check() {
+  if (symbolTable->isBreakable()){
+      ReportError::BreakOutsideLoop(this);
+  }
+}
 
 /*
 * ConditionalStmt
@@ -113,7 +122,13 @@ ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
     (body=b)->SetParent(this);
 }
 
-
+/**
+* TODO:
+*/
+void ContinueStmt::Check() {
+  // if (!Scope::current->ContinueAllowed())
+  //   ReportError::ContinueOutsideLoop(this);
+}
 
 /*
 * ForStmt

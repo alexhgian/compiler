@@ -23,6 +23,33 @@ class IntConstant;
 
 void yyerror(const char *msg);
 
+/**
+* TODO:
+* [] StmtBlock
+* [] DeclStmt
+* [] ConditionalStmt
+* [] LoopStmt
+* [] ForStmt
+    [] test (Expr)
+    [x] Decl
+* [] WhileStmt
+    [] test (Expr)
+    [x] Decl
+* [] IfStmt
+    [] test (Expr)
+    [x] Decl
+* [] BreakStmt
+* [] ContinueStmt
+* [] ReturnStmt
+    FnDecl
+    Expr
+* [] Case
+* [] Default
+* [] SwitchStmt
+*/
+
+
+
 class Program : public Node
 {
   protected:
@@ -134,7 +161,7 @@ class BreakStmt : public Stmt
   public:
     BreakStmt(yyltype loc) : Stmt(loc) {}
     const char *GetPrintNameForNode() { return "BreakStmt"; }
-
+    void Check();
 };
 
 class ContinueStmt : public Stmt
@@ -142,7 +169,7 @@ class ContinueStmt : public Stmt
   public:
     ContinueStmt(yyltype loc) : Stmt(loc) {}
     const char *GetPrintNameForNode() { return "ContinueStmt"; }
-
+    void Check();
 };
 
 class ReturnStmt : public Stmt

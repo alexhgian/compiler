@@ -15,6 +15,7 @@
  * [x] find
  */
  ScopedTable::ScopedTable(){
+     breakable = true;
     //  SetDebugForKey("symtable", false);
     //  PrintDebug("symtable", "Init ScopeTable - symbols.size() %d\n", (int)symbols.size());
  }

@@ -54,7 +54,7 @@ typedef pair<const char *, Symbol> SymPair;
 class ScopedTable {
   map<const char *, Symbol, lessStr> symbols;
   Symbol * lastSymbol;
-
+  bool breakable;
   public:
     ScopedTable();
     ~ScopedTable();
@@ -63,6 +63,8 @@ class ScopedTable {
     void remove(Symbol &sym);
     Symbol *find(const char *name);
     Symbol *last(){ return lastSymbol; };
+    bool isBreakable(){ return breakable; };
+    void setBreakable(bool val){ breakable = val; };
 };
 
 class SymbolTable {
@@ -81,6 +83,8 @@ class SymbolTable {
     Symbol *find(const char *name);
 
     FnDecl* getLastFn(){return lastFn; }
+    bool isBreakable() { return tables.back()->isBreakable(); }
+    void setBreakable(){ tables.back()->setBreakable(true); }
 };
 
 class MyStack {
