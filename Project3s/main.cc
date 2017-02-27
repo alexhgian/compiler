@@ -21,6 +21,9 @@
  */
 int main(int argc, char *argv[])
 {
+    SetDebugForKey("decl", true);
+    SetDebugForKey("expr", true);
+    SetDebugForKey("stmtCheck", true);
     ParseCommandLine(argc, argv);
     InitScanner();
     InitParser();

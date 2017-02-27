@@ -13,7 +13,7 @@
 Program::Program(List<Decl*> *d) {
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
-    SetDebugForKey("stmtCheck", false);
+
 }
 
 void Program::PrintChildren(int indentLevel) {
@@ -234,10 +234,12 @@ void ReturnStmt::PrintChildren(int indentLevel) {
 
 void ReturnStmt::Check(){
     Type* expect = symbolTable->getLastFn()->GetType();
-    // Type* actual = expr->checkType();
-    // PrintDebug("stmtCheck", "fn type: %s\n", expect);
-    // PrintDebug("stmtCheck", "ReturnStmt %s\n",  actual);
-    // ReportError::ReturnMismatch(this, givenType, expectedType);
+    Type* actual = expr->checkType();
+    // PrintDebug("stmtCheck", "fn type: %s\n", expect->getTypeName());
+    // PrintDebug("stmtCheck", "ReturnStmt %s | %s\n", actual->GetPrintNameForNode(), actual->getTypeName());
+    if(!expect->IsEquivalentTo(actual)){
+        ReportError::ReturnMismatch(this, Type::errorType, Type::errorType);
+    }
 }
 
 /*

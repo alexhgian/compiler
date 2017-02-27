@@ -45,6 +45,10 @@ void VarDecl::Check(){
     Symbol tmpSym(id->GetName(), this, E_VarDecl, 0);
     // printf("VarDecl Check(): %s\n",id->GetName() );
     symbolTable->insert(tmpSym);
+    if(assignTo){
+        Type* tmpType = assignTo->checkType();
+        PrintDebug("decl", "VarDec expr: %s", tmpType);
+    }
 }
 
 

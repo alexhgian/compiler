@@ -52,12 +52,12 @@ class Type : public Node
 
     const char *GetPrintNameForNode() { return "Type"; }
     void PrintChildren(int indentLevel);
-
+    virtual char * getTypeName(){ return typeName; }
     virtual void PrintToStream(ostream& out) { out << typeName; }
     friend ostream& operator<<(ostream& out, Type *t) { t->PrintToStream(out); return out; }
     virtual bool IsEquivalentTo(Type *other) { return (this == other); }
     virtual bool IsConvertibleTo(Type *other) { return (this == other || this == errorType); }
-    bool IsBool(); 
+    bool IsBool();
     bool IsNumeric();
     bool IsVector();
     bool IsMatrix();
