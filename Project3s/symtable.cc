@@ -74,6 +74,12 @@ SymbolTable::SymbolTable(){
 * Adds a symbol into the symbol table (map)
 */
 void SymbolTable::insert(Symbol &sym){
+    SetDebugForKey("symtable", true);
+    // PrintDebug("symtable","Function\n");
+    if(sym.kind == E_FunctionDecl){
+        PrintDebug("symtable","Function: %s\n", sym.name);
+        lastFn =  dynamic_cast<FnDecl*>(sym.decl);;
+    }
     ScopedTable *st = tables.back();
     st->insert(sym);
 }

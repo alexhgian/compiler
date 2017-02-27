@@ -13,7 +13,7 @@
 Program::Program(List<Decl*> *d) {
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
-    SetDebugForKey("stmtCheck", false);
+    SetDebugForKey("stmtCheck", true);
 }
 
 void Program::PrintChildren(int indentLevel) {
@@ -187,7 +187,10 @@ void ReturnStmt::PrintChildren(int indentLevel) {
 }
 
 void ReturnStmt::Check(){
-    // PrintDebug("stmtCheck", "ReturnStmt %s\n",  expr->GetPrintNameForNode());
+    Type* expect = symbolTable->getLastFn()->GetType();
+    // Type* actual = expr->checkType();
+    // PrintDebug("stmtCheck", "fn type: %s\n", expect);
+    // PrintDebug("stmtCheck", "ReturnStmt %s\n",  actual);
     // ReportError::ReturnMismatch(this, givenType, expectedType);
 }
 
@@ -223,4 +226,21 @@ void SwitchStmt::PrintChildren(int indentLevel) {
     if (expr) expr->Print(indentLevel+1);
     if (cases) cases->PrintAll(indentLevel+1);
     if (def) def->Print(indentLevel+1);
+}
+
+void SwitchStmt::Check() {
+    // check expression
+    // switch scope
+    symbolTable->push();
+
+    int size = cases->NumElements();
+    for (int i = 0; i < size; i++) {
+        cases->Nth(i)->Check();
+    }
+
+    if (def) {
+        def->Check();
+    }
+    
+    symbolTable->pop();
 }

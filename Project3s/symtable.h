@@ -68,7 +68,7 @@ class ScopedTable {
 class SymbolTable {
   std::vector<ScopedTable *> tables;
   // ScopeTable* currentScope;
-
+  FnDecl * lastFn;
   public:
     SymbolTable();
     ~SymbolTable();
@@ -80,7 +80,7 @@ class SymbolTable {
     void remove(Symbol &sym);
     Symbol *find(const char *name);
 
-    ScopedTable* currentScope(){return tables.back();}
+    FnDecl* getLastFn(){return lastFn; }
 };
 
 class MyStack {
