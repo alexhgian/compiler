@@ -4,3 +4,5 @@ services:
         image: alexgian/alpine-compiler
         volumes:
             - '.:/code'
+        command:
+            - 'sh'
