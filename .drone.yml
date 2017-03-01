@@ -2,4 +2,4 @@ pipeline:
     build:
       image: alexgian/alpine-compiler
       commands:
-        - cd Project3s/ && make
+        - make
