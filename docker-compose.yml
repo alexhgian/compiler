@@ -6,3 +6,4 @@ services:
             - '.:/code'
         command:
             - 'sh'
+        entrypoint: /code/Project4s
