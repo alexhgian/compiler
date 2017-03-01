@@ -3,6 +3,7 @@ pipeline:
         image: alexgian/alpine-compiler
         commands:
             - cd Project4s && make
+            - exit 1
 
     test:
         image: alexgian/alpine-compiler
