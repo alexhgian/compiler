@@ -1,4 +1,4 @@
 build:
-  image: ./
+  image: alexgian/alpine-gcc-make
   commands:
     - cd Project3s && make
