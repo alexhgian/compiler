@@ -2,9 +2,12 @@ pipeline:
     build:
         image: alexgian/alpine-compiler
         commands:
-            - make
+            - cd Project4s && make
 
     test:
         image: alexgian/alpine-compiler
         commands:
             - echo "Hello World"
+matrix:
+  TESTFOLDER:
+    - Project4s/
