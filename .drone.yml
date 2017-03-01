@@ -1,4 +1,4 @@
 build:
-  image: frolvlad/alpine-gcc
+  image: ./
   commands:
     - cd Project3s && make
