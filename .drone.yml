@@ -1,4 +1,5 @@
-build:
-  image: alexgian/alpine-gcc-make
-  commands:
-    - cd Project3s && make
+pipeline:
+    build:
+      image: alexgian/alpine-compiler
+      commands:
+        - cd Project3s/ && make
