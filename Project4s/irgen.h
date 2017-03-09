@@ -16,11 +16,14 @@
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Constants.h"
+#include "ast_type.h"
 
 class IRGenerator {
   public:
     IRGenerator();
     ~IRGenerator();
+
+    static IRGenerator& getInstance();
 
     llvm::Module   *GetOrCreateModule(const char *moduleID);
     llvm::LLVMContext *GetContext() const { return context; }
@@ -32,9 +35,14 @@ class IRGenerator {
     llvm::BasicBlock *GetBasicBlock() const;
     void        SetBasicBlock(llvm::BasicBlock *bb);
 
-    llvm::Type *GetIntType() const;
-    llvm::Type *GetBoolType() const;
-    llvm::Type *GetFloatType() const;
+    llvm::Type *getIntType() const;
+    llvm::Type *getBoolType() const;
+    llvm::Type *getFloatType() const;
+    llvm::Type *getVoidType() const;
+
+    // new declarations
+    llvm::Type *getType(Type *type);
+    void createFunctionBlock();
 
   private:
     llvm::LLVMContext *context;
@@ -49,4 +57,3 @@ class IRGenerator {
 };
 
 #endif
-

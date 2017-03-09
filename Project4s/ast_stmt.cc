@@ -12,6 +12,7 @@
 #include "llvm/Bitcode/ReaderWriter.h"
 #include "llvm/Support/raw_ostream.h"
 
+#include "utility.h"
 
 Program::Program(List<Decl*> *d) {
     Assert(d != NULL);
@@ -24,47 +25,71 @@ void Program::PrintChildren(int indentLevel) {
 }
 
 void Program::Emit() {
+    // fprintf(stderr, "Emit\n\n");
     // TODO:
     // This is just a reference for you to get started
     //
     // You can use this as a template and create Emit() function
     // for individual node to fill in the module structure and instructions.
     //
-    IRGenerator irgen;
-    llvm::Module *mod = irgen.GetOrCreateModule("Name_the_Module.bc");
+    IRGenerator &irgen = IRGenerator::getInstance();
+    llvm::Module *mod = irgen.GetOrCreateModule("foo.bc");
+
+    for (int i = 0; i < decls->NumElements(); ++i) {
+        Decl *d = decls->Nth(i);
+        // fprintf(stderr, "Decl %s\n\n",d->GetIdentifier()->GetName());
+        d->Emit();
+    }
+
+
 
     // create a function signature
-    std::vector<llvm::Type *> argTypes;
-    llvm::Type *intTy = irgen.GetIntType();
-    argTypes.push_back(intTy);
-    llvm::ArrayRef<llvm::Type *> argArray(argTypes);
-    llvm::FunctionType *funcTy = llvm::FunctionType::get(intTy, argArray, false);
+    // std::vector<llvm::Type *> argTypes;
+    // llvm::Type *intTy = irgen.GetIntType();
+    // argTypes.push_back(intTy);
+    // llvm::ArrayRef<llvm::Type *> argArray(argTypes);
+    // llvm::FunctionType *funcTy = llvm::FunctionType::get(intTy, argArray, false);
 
     // llvm::Function *f = llvm::cast<llvm::Function>(mod->getOrInsertFunction("foo", intTy, intTy, (Type *)0));
-    llvm::Function *f = llvm::cast<llvm::Function>(mod->getOrInsertFunction("Name_the_function", funcTy));
-    llvm::Argument *arg = (llvm::Argument*)(f->arg_begin());
-    arg->setName("x");
+    // llvm::Function *f = llvm::cast<llvm::Function>(mod->getOrInsertFunction("foo", funcTy));
+    // llvm::Argument *arg = (llvm::Argument*)(f->arg_begin());
+    // arg->setName("x");
 
     // insert a block into the runction
-    llvm::LLVMContext *context = irgen.GetContext();
-    llvm::BasicBlock *bb = llvm::BasicBlock::Create(*context, "entry", f);
+    // llvm::LLVMContext *context = irgen.GetContext();
+    // llvm::BasicBlock *bb = llvm::BasicBlock::Create(*context, "entry", f);
 
     // create a return instruction
-    llvm::Value *val = llvm::ConstantInt::get(intTy, 1);
-    llvm::Value *sum = llvm::BinaryOperator::CreateAdd(arg, val, "", bb);
-    llvm::ReturnInst::Create(*context, sum, bb);
+    // llvm::Value *val = llvm::ConstantInt::get(intTy, 1);
+    // llvm::Value *sum = llvm::BinaryOperator::CreateAdd(arg, val, "", bb);
+    // llvm::ReturnInst::Create(*context, sum, bb);
 
     // write the BC into standard output
     llvm::WriteBitcodeToFile(mod, llvm::outs());
 
     //uncomment the next line to generate the human readable/assembly file
-    //mod->dump();
+    mod->dump();
 }
 
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
     Assert(d != NULL && s != NULL);
     (decls=d)->SetParentAll(this);
     (stmts=s)->SetParentAll(this);
+}
+
+void StmtBlock::Emit() {
+  fprintf(stderr, "StmtBlock::Emit\n\n");
+  IRGenerator &irgen = IRGenerator::getInstance();
+  SymbolTable &symTable = SymbolTable::getInstance();
+
+
+  for (int i = 0; i < stmts->NumElements(); ++i) {
+       symTable.push();
+       if (irgen.GetBasicBlock()->getTerminator()) break;
+       stmts->Nth(i)->Emit();
+       symTable.pop();
+
+  }
 }
 
 void StmtBlock::PrintChildren(int indentLevel) {

@@ -1,0 +1,170 @@
+make: Nothing to be done for `default'.
+++ Executing array1.glsl
+1c1
+< ./gli: couldn't find entry function main
+---
+> Result: 6
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing array2.glsl
+1c1
+< ./gli: couldn't find entry function main
+---
+> Result: 5
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing assign.glsl
+1c1
+< ./gli: couldn't find entry function main
+---
+> Result: 10
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing call.glsl
+1c1
+< ./gli: couldn't find entry function main
+---
+> Result: 9.600000e+00
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing foo.glsl
+1c1
+< ./gli: couldn't find entry function foo
+---
+> Result: 4
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing for_loop.glsl
+1c1
+< ./gli: couldn't find entry function fortest
+---
+> Result: 1.024000e+03
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing for_loop_break.glsl
+1c1
+< ./gli: couldn't find entry function fortest
+---
+> Result: 7.290000e+02
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing if_nested.glsl
+1c1
+< ./gli: couldn't find entry function ifnested
+---
+> Result: 2.500000e+00
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing if_test.glsl
+1c1
+< ./gli: couldn't find entry function iftest
+---
+> Result: 1.000000e+00
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing multi_func.glsl
+1c1
+< ./gli: couldn't find entry function bar
+---
+> Result: 3.100000e+00
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing postfix.glsl
+1c1
+< ./gli: couldn't find entry function postfix
+---
+> Result: 15
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing simple_add.glsl
+1c1
+< ./gli: couldn't find entry function simpleadd
+---
+> Result: 3.000000e+00
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing switch_fall_through.glsl
+1c1
+< ./gli: couldn't find entry function switchtest2
+---
+> Result: 3.300000e+00
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing unary.glsl
+1c1
+< ./gli: couldn't find entry function unary
+---
+> Result: 6.500000e+00
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing vec2_test.glsl
+1c1
+< ./gli: couldn't find entry function v2test
+---
+> Result: 9.900001e+00
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing vect_assign.glsl
+1c1
+< ./gli: couldn't find entry function vectassign
+---
+> Result: 7.500000e-01
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing vect_assign_partial.glsl
+1c1
+< ./gli: couldn't find entry function assignvec
+---
+> Result: 6.500000e+00
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing vector_extract.glsl
+1c1
+< ./gli: couldn't find entry function foo
+---
+> Result: 4.000000e+00
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing vector_shuffle.glsl
+1c1
+< ./gli: couldn't find entry function foo
+---
+> Result: 2.000000e+01
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing while_loop.glsl
+1c1
+< ./gli: couldn't find entry function whiletest
+---
+> Result: 5050
+
+Result: [0;36mFAIL[0;0m
+
+++ Executing while_loop_continue.glsl
+1c1
+< ./gli: couldn't find entry function whiletest
+---
+> Result: 1035
+
+Result: [0;36mFAIL[0;0m
+
+SCORE: [1;37m0/21[0;0m

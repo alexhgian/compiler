@@ -1,6 +1,6 @@
 /**
  * File: symtable.h
- * ----------- 
+ * -----------
  *  This file defines a class for symbol table and scoped table table.
  *
  *  Scoped table is to hold all declarations in a nested scope. It simply
@@ -51,7 +51,7 @@ struct lessStr {
   bool operator()(const char* s1, const char* s2) const
   { return strcmp(s1, s2) < 0; }
 };
- 
+
 typedef map<const char *, Symbol, lessStr>::iterator SymbolIterator;
 
 class ScopedTable {
@@ -61,17 +61,25 @@ class ScopedTable {
     ScopedTable();
     ~ScopedTable();
 
-    void insert(Symbol &sym); 
+    void insert(Symbol &sym);
     void remove(Symbol &sym);
     Symbol *find(const char *name);
 };
-   
+
+
+
+
 class SymbolTable {
   std::vector<ScopedTable *> tables;
- 
+
   public:
     SymbolTable();
-    ~SymbolTable();
+    ~SymbolTable(){};
+
+    static SymbolTable& getInstance() {
+      static SymbolTable st;
+      return st;
+    }
 
     void push();
     void pop();
@@ -81,7 +89,7 @@ class SymbolTable {
     Symbol *find(const char *name);
 
     bool isGlobalScope() const { return (tables.size() == 1); }
-};    
+};
 
 class MyStack {
     vector<Stmt *> stmtStack;

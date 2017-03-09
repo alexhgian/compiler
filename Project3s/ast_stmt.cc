@@ -53,6 +53,36 @@ void StmtBlock::PrintChildren(int indentLevel) {
     stmts->PrintAll(indentLevel+1);
 }
 
+void StmtBlock::Emit(){
+    
+}
+// void StmtBlock::Check(){
+//      PrintDebug("stmtCheck", "StmtBlock::Check()\n");
+//
+//     int numOfDecls = decls->NumElements();
+//     for (int i = 0; i < numOfDecls; i++){
+//         decls->Nth(i)->Check();
+//         PrintDebug("stmtCheck", "StmtBlock decl loop: %s\n",decls->Nth(i)->GetIdentifier());
+//     }
+//
+//     int numOfStmt = stmts->NumElements();
+//     for (int i = 0; i < numOfStmt; i++){
+//         PrintDebug("stmtCheck", "StmtBlock stmt loop: %s\n",stmts->Nth(i)->GetPrintNameForNode());
+//
+//         // Handle if statement is in function scope or block scope
+//         if( strcmp(stmts->Nth(i)->GetPrintNameForNode(), "StmtBlock") == 0 ){
+//             PrintDebug("stmtCheck", "StmtBlock creating new scope\n");
+//             // ----- START block scope -----
+//             symbolTable->push();
+//             stmts->Nth(i)->Check();
+//             symbolTable->pop();
+//             // ----- END block scope -----
+//         } else {
+//             stmts->Nth(i)->Check();
+//         }
+//     }
+// }
+
 DeclStmt::DeclStmt(Decl *d) {
     Assert(d != NULL);
     (decl=d)->SetParent(this);
