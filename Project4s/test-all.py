@@ -8,7 +8,7 @@
 import os
 from subprocess import *
 
-TEST_DIRECTORY = 'tests'
+TEST_DIRECTORY = 'public_samples'
 
 
 def main():
