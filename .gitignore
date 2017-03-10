@@ -1,2 +1,8 @@
 .DS_Store
-
+*.o
+*.bc
+Project4s/y.output
+Project4s/y.tab.c
+Project4s/y.tab.h
+Project4s/lex.yy.c
+glc

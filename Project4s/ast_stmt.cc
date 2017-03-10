@@ -82,14 +82,16 @@ void StmtBlock::Emit() {
   IRGenerator &irgen = IRGenerator::getInstance();
   SymbolTable &symTable = SymbolTable::getInstance();
 
+  // Enter block scope
+  symTable.push();
 
-  for (int i = 0; i < stmts->NumElements(); ++i) {
-       symTable.push();
-       if (irgen.GetBasicBlock()->getTerminator()) break;
+  for (int i = 0; i < stmts->NumElements(); i++) {
+       if (irgen.GetBasicBlock()->getTerminator()){ break; }
        stmts->Nth(i)->Emit();
-       symTable.pop();
-
   }
+
+  // Leave block scope
+  symTable.pop();
 }
 
 void StmtBlock::PrintChildren(int indentLevel) {
