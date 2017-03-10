@@ -69,7 +69,7 @@ def colorifyTestResult(glslFile, result):
     return 0
 
 def printTestResults(results, total):
-  print 'SCORE: ' + '\033[1;37m' + str(results) + '/' + str(total) + '\033[0;0m'
+  print 'SCORE: ' + '\033[1;31m' + str(results) + '/' + str(total) + '\033[0;0m'
 
 
 # entry point
