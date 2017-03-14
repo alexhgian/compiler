@@ -70,6 +70,7 @@ void FnDecl::PrintChildren(int indentLevel) {
 
 
 void FnDecl::Emit() {
+    SymbolTable &symtab = SymbolTable::getInstance();
     IRGenerator &irgen = IRGenerator::getInstance();
     // get the module singleton
     llvm::Module *mod = irgen.GetOrCreateModule(NULL);
@@ -93,10 +94,29 @@ void FnDecl::Emit() {
     llvm::Function *f = mod->getFunction(id->GetName());
     irgen.SetFunction(f);
 
+
+    // Add function to scope
+    symtab.insert(id->GetName(), this, f);
+
+    // Create function scope
+    symtab.push();
+
+
     // generate block
+    // llvm::BasicBlock *bb = llvm::BasicBlock::Create(irgen.GetContext(), "Function", f);
     irgen.createFunctionBlock();
 
+    llvm::Function::arg_iterator arg = f->arg_begin();
+    for (int i = 0; arg != f->arg_end() && i < formals->NumElements(); ++i, ++arg) {
+      VarDecl *argDecl = formals->Nth(i);
+      arg->setName(argDecl->GetIdentifier()->GetName());
+      argDecl->Emit();
+    //   Scope::current->AssignVar(argDecl->GetIdentifier(), arg);
+    }
 
     // generate body
     body->Emit();
+
+    // Unset basic block
+    irgen.SetBasicBlock(NULL);
 }
