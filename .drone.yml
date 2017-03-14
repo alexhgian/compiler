@@ -1,0 +1,14 @@
+pipeline:
+    build:
+        image: alexgian/alpine-compiler
+        commands:
+            - cd Project4s && make
+            - echo "HI"
+
+    test:
+        image: alexgian/alpine-compiler
+        commands:
+            - echo "Hello World"
+matrix:
+  TESTFOLDER:
+    - Project4s/

@@ -3,3 +3,10 @@ lex.yy.c
 y.output
 y.tab.c
 y.tab.h
+*.o
+*.bc
+Project4s/y.output
+Project4s/y.tab.c
+Project4s/y.tab.h
+Project4s/lex.yy.c
+glc
