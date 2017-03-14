@@ -3,7 +3,7 @@
  * The Expr class and its subclasses are used to represent
  * expressions in the parse tree.  For each expression in the
  * language (add, call, New, etc.) there is a corresponding
- * node class for that construct. 
+ * node class for that construct.
  *
  * pp3: You will need to extend the Expr classes to implement
  * semantic analysis for rules pertaining to expressions.
@@ -17,10 +17,11 @@
 #include "ast_stmt.h"
 #include "list.h"
 #include "ast_type.h"
+#include "irgen.h"
 
 void yyerror(const char *msg);
 
-class Expr : public Stmt 
+class Expr : public Stmt
 {
   public:
     Expr(yyltype loc) : Stmt(loc) {}
@@ -29,6 +30,7 @@ class Expr : public Stmt
     friend std::ostream& operator<< (std::ostream& stream, Expr * expr) {
         return stream << expr->GetPrintNameForNode();
     }
+    virtual llvm::Value* getValue(){ return NULL; };
 };
 
 class ExprError : public Expr
@@ -47,33 +49,41 @@ class EmptyExpr : public Expr
     const char *GetPrintNameForNode() { return "Empty"; }
 };
 
-class IntConstant : public Expr 
+class IntConstant : public Expr
 {
   protected:
     int value;
-  
+
   public:
     IntConstant(yyltype loc, int val);
     const char *GetPrintNameForNode() { return "IntConstant"; }
     void PrintChildren(int indentLevel);
+    llvm::Value* getValue(){
+        // fprintf(stderr, "IntConstant::Emit\n\n");
+         return llvm::ConstantInt::get(
+             IRGenerator::getInstance().getIntType(),
+             this->value,
+             true
+         );
+    }
 };
 
-class FloatConstant: public Expr 
+class FloatConstant: public Expr
 {
   protected:
     double value;
-    
+
   public:
     FloatConstant(yyltype loc, double val);
     const char *GetPrintNameForNode() { return "FloatConstant"; }
     void PrintChildren(int indentLevel);
 };
 
-class BoolConstant : public Expr 
+class BoolConstant : public Expr
 {
   protected:
     bool value;
-    
+
   public:
     BoolConstant(yyltype loc, bool val);
     const char *GetPrintNameForNode() { return "BoolConstant"; }
@@ -92,11 +102,11 @@ class VarExpr : public Expr
     Identifier *GetIdentifier() {return id;}
 };
 
-class Operator : public Node 
+class Operator : public Node
 {
   protected:
     char tokenString[4];
-    
+
   public:
     Operator(yyltype loc, const char *tok);
     const char *GetPrintNameForNode() { return "Operator"; }
@@ -104,13 +114,13 @@ class Operator : public Node
     friend ostream& operator<<(ostream& out, Operator *o) { return out << o->tokenString; }
     bool IsOp(const char *op) const;
  };
- 
+
 class CompoundExpr : public Expr
 {
   protected:
     Operator *op;
     Expr *left, *right; // left will be NULL if unary
-    
+
   public:
     CompoundExpr(Expr *lhs, Operator *op, Expr *rhs); // for binary
     CompoundExpr(Operator *op, Expr *rhs);             // for unary
@@ -118,7 +128,7 @@ class CompoundExpr : public Expr
     void PrintChildren(int indentLevel);
 };
 
-class ArithmeticExpr : public CompoundExpr 
+class ArithmeticExpr : public CompoundExpr
 {
   public:
     ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
@@ -126,21 +136,21 @@ class ArithmeticExpr : public CompoundExpr
     const char *GetPrintNameForNode() { return "ArithmeticExpr"; }
 };
 
-class RelationalExpr : public CompoundExpr 
+class RelationalExpr : public CompoundExpr
 {
   public:
     RelationalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "RelationalExpr"; }
 };
 
-class EqualityExpr : public CompoundExpr 
+class EqualityExpr : public CompoundExpr
 {
   public:
     EqualityExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "EqualityExpr"; }
 };
 
-class LogicalExpr : public CompoundExpr 
+class LogicalExpr : public CompoundExpr
 {
   public:
     LogicalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
@@ -148,7 +158,7 @@ class LogicalExpr : public CompoundExpr
     const char *GetPrintNameForNode() { return "LogicalExpr"; }
 };
 
-class AssignExpr : public CompoundExpr 
+class AssignExpr : public CompoundExpr
 {
   public:
     AssignExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
@@ -173,17 +183,17 @@ class ConditionalExpr : public Expr
     const char *GetPrintNameForNode() { return "ConditionalExpr"; }
 };
 
-class LValue : public Expr 
+class LValue : public Expr
 {
   public:
     LValue(yyltype loc) : Expr(loc) {}
 };
 
-class ArrayAccess : public LValue 
+class ArrayAccess : public LValue
 {
   protected:
     Expr *base, *subscript;
-    
+
   public:
     ArrayAccess(yyltype loc, Expr *base, Expr *subscript);
     const char *GetPrintNameForNode() { return "ArrayAccess"; }
@@ -195,12 +205,12 @@ class ArrayAccess : public LValue
  * know for sure whether there is an implicit "this." in
  * front until later on, so we use one node type for either
  * and sort it out later. */
-class FieldAccess : public LValue 
+class FieldAccess : public LValue
 {
   protected:
     Expr *base;	// will be NULL if no explicit base
     Identifier *field;
-    
+
   public:
     FieldAccess(Expr *base, Identifier *field); //ok to pass NULL base
     const char *GetPrintNameForNode() { return "FieldAccess"; }
@@ -211,13 +221,13 @@ class FieldAccess : public LValue
  * and unqualified field().  We won't figure out until later
  * whether we need implicit "this." so we use one node type for either
  * and sort it out later. */
-class Call : public Expr 
+class Call : public Expr
 {
   protected:
     Expr *base;	// will be NULL if no explicit base
     Identifier *field;
     List<Expr*> *actuals;
-    
+
   public:
     Call() : Expr(), base(NULL), field(NULL), actuals(NULL) {}
     Call(yyltype loc, Expr *base, Identifier *field, List<Expr*> *args);

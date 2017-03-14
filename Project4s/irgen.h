@@ -42,7 +42,7 @@ class IRGenerator {
 
     // new declarations
     llvm::Type *getType(Type *type);
-    void createFunctionBlock();
+    llvm::BasicBlock *createFunctionBlock(const char* name);
 
   private:
     llvm::LLVMContext *context;

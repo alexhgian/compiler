@@ -78,12 +78,13 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
 }
 
 void StmtBlock::Emit() {
-  fprintf(stderr, "StmtBlock::Emit\n\n");
-  IRGenerator &irgen = IRGenerator::getInstance();
+  // fprintf(stderr, "StmtBlock::Emit\n\n");
   SymbolTable &symTable = SymbolTable::getInstance();
+  IRGenerator &irgen = IRGenerator::getInstance();
+
 
   // Enter block scope
-  symTable.push();
+  // symTable.push();
 
   for (int i = 0; i < stmts->NumElements(); i++) {
        if (irgen.GetBasicBlock()->getTerminator()){ break; }
@@ -91,7 +92,7 @@ void StmtBlock::Emit() {
   }
 
   // Leave block scope
-  symTable.pop();
+  // symTable.pop();
 }
 
 void StmtBlock::PrintChildren(int indentLevel) {
@@ -157,6 +158,24 @@ void ReturnStmt::PrintChildren(int indentLevel) {
     if ( expr )
       expr->Print(indentLevel+1);
 }
+
+void ReturnStmt::Emit(){
+    // fprintf(stderr, "ReturnStmt::Emit\n\n");
+    SymbolTable &symTable = SymbolTable::getInstance();
+    IRGenerator &irgen = IRGenerator::getInstance();
+
+    llvm::LLVMContext *context = irgen.GetContext();
+    llvm::Value *returnValue = NULL;
+
+    // fprintf(stderr, "ReturnStmt::getValue: %s\n\n", expr->GetPrintNameForNode());
+    if (expr) {
+        returnValue = expr->getValue();
+    }
+    // fprintf(stderr, "ReturnStmt::Create\n\n");
+    llvm::ReturnInst::Create(*context, returnValue, irgen.GetBasicBlock());
+
+}
+
 
 SwitchLabel::SwitchLabel(Expr *l, Stmt *s) {
     Assert(l != NULL && s != NULL);

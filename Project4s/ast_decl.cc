@@ -41,6 +41,27 @@ void VarDecl::PrintChildren(int indentLevel) {
    if (assignTo) assignTo->Print(indentLevel+1, "(initializer) ");
 }
 
+void VarDecl::Emit(){
+    SymbolTable &symTab = SymbolTable::getInstance();
+    IRGenerator &irgen = IRGenerator::getInstance();
+
+    Identifier *id = this->GetIdentifier();
+
+    llvm::Type *vType = irgen.getType(this->GetType());
+    llvm::Value *v = new llvm::AllocaInst(vType, id->GetName(), irgen.GetBasicBlock());
+
+    // Check if variable is global
+    // if(symtable.isGlobalScope()){
+    //      new llvm::GlobalVariable
+    // } else {
+    //      new llvm::AllocaInst
+    // }
+
+    Symbol tmpSym(id->GetName(), this, E_VarDecl, v);
+
+    symTab.insert(tmpSym);
+}
+
 FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n) {
     Assert(n != NULL && r!= NULL && d != NULL);
     (returnType=r)->SetParent(this);
@@ -72,6 +93,7 @@ void FnDecl::PrintChildren(int indentLevel) {
 void FnDecl::Emit() {
     SymbolTable &symtab = SymbolTable::getInstance();
     IRGenerator &irgen = IRGenerator::getInstance();
+
     // get the module singleton
     llvm::Module *mod = irgen.GetOrCreateModule(NULL);
 
@@ -96,16 +118,16 @@ void FnDecl::Emit() {
 
 
     // Add function to scope
-    symtab.insert(id->GetName(), this, f);
+    Symbol tmpSym(id->GetName(), this, E_FunctionDecl, f);
+    symtab.insert(tmpSym);
 
     // Create function scope
     symtab.push();
 
+    // create BasicBlock entry
+    llvm::BasicBlock *bbEntry = irgen.createFunctionBlock("entry");
 
-    // generate block
-    // llvm::BasicBlock *bb = llvm::BasicBlock::Create(irgen.GetContext(), "Function", f);
-    irgen.createFunctionBlock();
-
+    // function arguments
     llvm::Function::arg_iterator arg = f->arg_begin();
     for (int i = 0; arg != f->arg_end() && i < formals->NumElements(); ++i, ++arg) {
       VarDecl *argDecl = formals->Nth(i);
@@ -114,9 +136,17 @@ void FnDecl::Emit() {
     //   Scope::current->AssignVar(argDecl->GetIdentifier(), arg);
     }
 
-    // generate body
+    // ----- generate body  -----
+
+    // create BasicBlock next
+    llvm::BasicBlock *bbNext = irgen.createFunctionBlock("next");
+
+    // branch from entry to next
+    llvm::BranchInst::Create(bbNext, bbEntry);
+
     body->Emit();
 
     // Unset basic block
     irgen.SetBasicBlock(NULL);
+    symtab.pop();
 }

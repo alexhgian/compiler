@@ -52,9 +52,10 @@ llvm::BasicBlock *IRGenerator::GetBasicBlock() const {
    return currentBB;
 }
 
-void IRGenerator::createFunctionBlock() {
-    llvm::BasicBlock *bbTemp = llvm::BasicBlock::Create(*GetContext(), "entry", GetFunction());
+llvm::BasicBlock * IRGenerator::createFunctionBlock(const char* name) {
+    llvm::BasicBlock *bbTemp = llvm::BasicBlock::Create(*GetContext(), name, GetFunction());
     getInstance().SetBasicBlock(bbTemp);
+    return bbTemp;
 }
 
 

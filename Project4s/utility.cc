@@ -16,7 +16,7 @@ static const int BufferSize = 2048;
 void Failure(const char *format, ...) {
   va_list args;
   char errbuf[BufferSize];
-  
+
   va_start(args, format);
   vsprintf(errbuf, format, args);
   va_end(args);
@@ -27,7 +27,7 @@ void Failure(const char *format, ...) {
 
 int IndexOf(const char *key) {
   for (unsigned int i = 0; i < debugKeys.size(); i++)
-    if (!strcmp(debugKeys[i], key)) 
+    if (!strcmp(debugKeys[i], key))
       return i;
 
   return -1;
@@ -51,7 +51,7 @@ void PrintDebug(const char *key, const char *format, ...) {
 
   if (!IsDebugOn(key))
      return;
-  
+
   va_start(args, format);
   vsprintf(buf, format, args);
   va_end(args);
@@ -61,7 +61,7 @@ void PrintDebug(const char *key, const char *format, ...) {
 void ParseCommandLine(int argc, char *argv[]) {
   if (argc == 1)
     return;
-  
+
   if (strcmp(argv[1], "-d") != 0) { // first arg is not -d
     printf("Incorrect Use:   ");
     for (int i = 1; i < argc; i++) printf("%s ", argv[i]);
@@ -73,4 +73,3 @@ void ParseCommandLine(int argc, char *argv[]) {
   for (int i = 2; i < argc; i++)
     SetDebugForKey(argv[i], true);
 }
-

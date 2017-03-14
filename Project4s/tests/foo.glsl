@@ -1,5 +1,5 @@
 
-int foo(int x)
+int foo()
 {
-    return x;
+    return 3;
 }
