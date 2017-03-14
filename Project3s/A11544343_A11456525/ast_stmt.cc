@@ -86,6 +86,9 @@ void StmtBlock::Check(){
     }
 }
 
+/*
+* DeclStmt
+*/
 DeclStmt::DeclStmt(Decl *d) {
     Assert(d != NULL);
     (decl=d)->SetParent(this);
