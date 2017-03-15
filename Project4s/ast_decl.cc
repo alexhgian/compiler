@@ -55,7 +55,9 @@ void VarDecl::Emit(){
     if(symtab.isGlobalScope()){
          v = new llvm::GlobalVariable(vType, false, llvm::GlobalValue::ExternalLinkage, NULL, id->GetName());
     } else {
-         v = new llvm::AllocaInst(vType, id->GetName(), irgen.GetBasicBlock());
+        llvm::BasicBlock *entryBB = &(irgen.GetFunction()->getEntryBlock());
+         v = new llvm::AllocaInst(vType, id->GetName(), entryBB);
+
     }
 
     Symbol tmpSym(id->GetName(), this, E_VarDecl, v);
@@ -143,8 +145,8 @@ void FnDecl::Emit() {
         arg->setName(id->GetName());
 
         // printf(stderr, "%s\n", "arg"+std::to_string(i));
-        // llvm::BasicBlock *tmpBB = &(irgen.GetFunction()->getEntryBlock());
-        llvm::Value *storeVal = new llvm::AllocaInst(varType, "arg"+std::to_string(i), bbEntry);
+        llvm::BasicBlock *tmpEntryBB = &(irgen.GetFunction()->getEntryBlock());
+        llvm::Value *storeVal = new llvm::AllocaInst(varType, "arg"+std::to_string(i), tmpEntryBB);
 
         // Symbol *symRes = symtab.find(argDecl->GetIdentifier()->GetName());
         (void) new llvm::StoreInst(arg, storeVal, false, bbNext);
@@ -157,12 +159,10 @@ void FnDecl::Emit() {
 
     // ----- generate body  -----
 
-    // branch from entry to next
-    llvm::BranchInst::Create(bbNext, bbEntry);
-
     body->Emit();
 
-
+    // branch from entry to next
+    llvm::BranchInst::Create(bbNext, bbEntry);
 
     // Unset basic block
     irgen.SetBasicBlock(NULL);
