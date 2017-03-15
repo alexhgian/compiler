@@ -78,7 +78,7 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
 }
 
 void StmtBlock::Emit() {
-  // fprintf(stderr, "StmtBlock::Emit\n\n");
+  fprintf(stderr, "StmtBlock::Emit\n\n");
   SymbolTable &symTable = SymbolTable::getInstance();
   IRGenerator &irgen = IRGenerator::getInstance();
 
@@ -88,6 +88,7 @@ void StmtBlock::Emit() {
 
   for (int i = 0; i < stmts->NumElements(); i++) {
        if (irgen.GetBasicBlock()->getTerminator()){ break; }
+        fprintf(stderr, "StmtBlock::Loop\n\n");
        stmts->Nth(i)->Emit();
   }
 
@@ -107,6 +108,10 @@ DeclStmt::DeclStmt(Decl *d) {
 
 void DeclStmt::PrintChildren(int indentLevel) {
     decl->Print(indentLevel+1);
+}
+
+void DeclStmt::Emit() {
+    decl->Emit(); 
 }
 
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {

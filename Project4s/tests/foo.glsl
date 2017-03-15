@@ -1,5 +1,10 @@
 
 int foo()
 {
-    return 3;
+    int x;
+    {
+        int y;
+        y = x;
+    }
+    return 0;
 }

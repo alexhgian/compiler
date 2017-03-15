@@ -42,24 +42,25 @@ void VarDecl::PrintChildren(int indentLevel) {
 }
 
 void VarDecl::Emit(){
-    SymbolTable &symTab = SymbolTable::getInstance();
+    fprintf(stderr, "VarDecl::Emit \n");
+    SymbolTable &symtab = SymbolTable::getInstance();
     IRGenerator &irgen = IRGenerator::getInstance();
 
     Identifier *id = this->GetIdentifier();
 
     llvm::Type *vType = irgen.getType(this->GetType());
-    llvm::Value *v = new llvm::AllocaInst(vType, id->GetName(), irgen.GetBasicBlock());
+    llvm::Value *v = NULL;
 
     // Check if variable is global
-    // if(symtable.isGlobalScope()){
-    //      new llvm::GlobalVariable
-    // } else {
-    //      new llvm::AllocaInst
-    // }
+    if(symtab.isGlobalScope()){
+         v = new llvm::GlobalVariable(vType, false, llvm::GlobalValue::ExternalLinkage, NULL, id->GetName());
+    } else {
+         v = new llvm::AllocaInst(vType, id->GetName(), irgen.GetBasicBlock());
+    }
 
     Symbol tmpSym(id->GetName(), this, E_VarDecl, v);
 
-    symTab.insert(tmpSym);
+    symtab.insert(tmpSym);
 }
 
 FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n) {
@@ -126,25 +127,39 @@ void FnDecl::Emit() {
 
     // create BasicBlock entry
     llvm::BasicBlock *bbEntry = irgen.createFunctionBlock("entry");
+    // create BasicBlock next
+    llvm::BasicBlock *bbNext = irgen.createFunctionBlock("next");
 
     // function arguments
     llvm::Function::arg_iterator arg = f->arg_begin();
-    for (int i = 0; arg != f->arg_end() && i < formals->NumElements(); ++i, ++arg) {
-      VarDecl *argDecl = formals->Nth(i);
-      arg->setName(argDecl->GetIdentifier()->GetName());
-      argDecl->Emit();
-    //   Scope::current->AssignVar(argDecl->GetIdentifier(), arg);
+    for (int i = 0; arg != f->arg_end() && i < formals->NumElements(); i++, arg++) {
+        VarDecl *argDecl = formals->Nth(i);
+        Identifier *id = argDecl->GetIdentifier();
+        llvm::Type *varType = irgen.getType(argDecl->GetType());
+
+        arg->setName(id->GetName());
+
+        // printf(stderr, "%s\n", "arg"+std::to_string(i));
+
+        llvm::Value *storeVal = new llvm::AllocaInst(varType, "arg"+std::to_string(i), f->getEntryBlock());
+
+        // Symbol *symRes = symtab.find(argDecl->GetIdentifier()->GetName());
+        (void) new llvm::StoreInst(arg, storeVal, false, bbNext);
+
+        // Store in symtable
+        Symbol tmpSym(id->GetName(), this, E_VarDecl, storeVal);
+        symtab.insert(tmpSym);
+        //   Scope::current->AssignVar(argDecl->GetIdentifier(), arg);
     }
 
     // ----- generate body  -----
-
-    // create BasicBlock next
-    llvm::BasicBlock *bbNext = irgen.createFunctionBlock("next");
 
     // branch from entry to next
     llvm::BranchInst::Create(bbNext, bbEntry);
 
     body->Emit();
+
+
 
     // Unset basic block
     irgen.SetBasicBlock(NULL);

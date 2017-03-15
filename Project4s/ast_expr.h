@@ -17,6 +17,7 @@
 #include "ast_stmt.h"
 #include "list.h"
 #include "ast_type.h"
+#include "symtable.h"
 #include "irgen.h"
 
 void yyerror(const char *msg);
@@ -77,6 +78,13 @@ class FloatConstant: public Expr
     FloatConstant(yyltype loc, double val);
     const char *GetPrintNameForNode() { return "FloatConstant"; }
     void PrintChildren(int indentLevel);
+    llvm::Value* getValue(){
+        // fprintf(stderr, "IntConstant::Emit\n\n");
+         return llvm::ConstantFP::get(
+             IRGenerator::getInstance().getFloatType(),
+             this->value
+         );
+    }
 };
 
 class BoolConstant : public Expr
@@ -88,6 +96,14 @@ class BoolConstant : public Expr
     BoolConstant(yyltype loc, bool val);
     const char *GetPrintNameForNode() { return "BoolConstant"; }
     void PrintChildren(int indentLevel);
+    llvm::Value* getValue(){
+        // fprintf(stderr, "IntConstant::Emit\n\n");
+         return llvm::ConstantInt::get(
+             IRGenerator::getInstance().getBoolType(),
+             this->value,
+             true
+         );
+    }
 };
 
 class VarExpr : public Expr
@@ -100,6 +116,7 @@ class VarExpr : public Expr
     const char *GetPrintNameForNode() { return "VarExpr"; }
     void PrintChildren(int indentLevel);
     Identifier *GetIdentifier() {return id;}
+    llvm::Value* getValue();
 };
 
 class Operator : public Node
