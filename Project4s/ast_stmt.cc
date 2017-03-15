@@ -111,7 +111,7 @@ void DeclStmt::PrintChildren(int indentLevel) {
 }
 
 void DeclStmt::Emit() {
-    decl->Emit(); 
+    // decl->Emit(); 
 }
 
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {

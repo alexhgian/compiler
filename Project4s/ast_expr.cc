@@ -46,8 +46,8 @@ llvm::Value* VarExpr::getValue(){
     Symbol *sym = symtab.find(id->GetName());
     llvm::Value *v = sym->value;
     // fprintf(stderr, "VarExpr::getValue: %f\n", );
-    v->dump();
-    llvm::BasicBlock *bb = irgen.GetBasicBlock();
+    // v->dump();
+    // llvm::BasicBlock *bb = irgen.GetBasicBlock();
     // if(v && bb){
     //     fprintf(stderr, "VarExpr::getValue: true\n");
     // } else {

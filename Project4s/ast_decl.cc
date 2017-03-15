@@ -127,8 +127,11 @@ void FnDecl::Emit() {
 
     // create BasicBlock entry
     llvm::BasicBlock *bbEntry = irgen.createFunctionBlock("entry");
+    irgen.SetBasicBlock(bbEntry);
+
     // create BasicBlock next
     llvm::BasicBlock *bbNext = irgen.createFunctionBlock("next");
+    irgen.SetBasicBlock(bbNext);
 
     // function arguments
     llvm::Function::arg_iterator arg = f->arg_begin();
@@ -140,8 +143,8 @@ void FnDecl::Emit() {
         arg->setName(id->GetName());
 
         // printf(stderr, "%s\n", "arg"+std::to_string(i));
-
-        llvm::Value *storeVal = new llvm::AllocaInst(varType, "arg"+std::to_string(i), f->getEntryBlock());
+        // llvm::BasicBlock *tmpBB = &(irgen.GetFunction()->getEntryBlock());
+        llvm::Value *storeVal = new llvm::AllocaInst(varType, "arg"+std::to_string(i), bbEntry);
 
         // Symbol *symRes = symtab.find(argDecl->GetIdentifier()->GetName());
         (void) new llvm::StoreInst(arg, storeVal, false, bbNext);
