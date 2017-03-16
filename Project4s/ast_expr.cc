@@ -8,6 +8,7 @@
 #include "ast_type.h"
 #include "ast_decl.h"
 #include "symtable.h"
+#include "irgen.h"
 
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
     value = val;
@@ -140,6 +141,68 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
     (field=f)->SetParent(this);
 }
 
+llvm::BinaryOperator::BinaryOps toBinaryOps(bool isFloat, Operator *op){
+    llvm::BinaryOperator::BinaryOps _op;
+    if (op->IsOp("+")) {
+        if(isFloat) {
+            _op = llvm::BinaryOperator::FAdd;
+        } else {
+            _op = llvm::BinaryOperator::Add;
+        }
+    } else if (op->IsOp("-")){
+        if(isFloat) {
+            _op = llvm::BinaryOperator::FSub;
+        } else {
+            _op = llvm::BinaryOperator::Sub;
+        }
+    } else if (op->IsOp("*")){
+        if(isFloat) {
+            _op = llvm::BinaryOperator::FMul;
+        } else {
+            _op = llvm::BinaryOperator::Mul;
+        }
+    } else {
+        if(isFloat) {
+            _op = llvm::BinaryOperator::FDiv;
+        } else {
+            _op = llvm::BinaryOperator::SDiv;
+        }
+    }
+    return _op;
+}
+
+llvm::Value* ArithmeticExpr::getValue(){
+    fprintf(stderr, "ArithmeticExpr::getValue() %s\n", "hi");
+    IRGenerator &irgen = IRGenerator::getInstance();
+
+    llvm::Value *leftOp = left->getValue();
+    llvm::Value *rightOp = right->getValue();
+
+    bool isFloat = leftOp->getType()->isFloatTy();
+
+    llvm::BinaryOperator::BinaryOps binOp = toBinaryOps(isFloat, op);
+
+    return llvm::BinaryOperator::Create(binOp, leftOp, rightOp, "", irgen.GetBasicBlock());
+}
+
+llvm::Value* PostfixExpr::getValue(){
+    fprintf(stderr, "PostfixExpr::getValue()\n");
+    return NULL;
+}
+
+llvm::Value* AssignExpr::getValue(){
+    fprintf(stderr, "AssignExpr::getValue()\n");
+    return NULL;
+}
+
+llvm::Value* EqualityExpr::getValue(){
+    fprintf(stderr, "EqualityExpr::getValue()\n");
+    return NULL;
+}
+llvm::Value* RelationalExpr::getValue(){
+    fprintf(stderr, "RelationalExpr::getValue()\n");
+    return NULL;
+}
 
 void FieldAccess::PrintChildren(int indentLevel) {
     if (base) base->Print(indentLevel+1);

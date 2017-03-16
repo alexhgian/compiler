@@ -3,8 +3,8 @@
  * Bison input file to generate the parser for the compiler.
  *
  * pp2: your job is to write a parser that will construct the parse tree
- *      and if no parse errors were found, print it.  The parser should 
- *      accept the language as described in specification, and as augmented 
+ *      and if no parse errors were found, print it.  The parser should
+ *      accept the language as described in specification, and as augmented
  *      in the pp2 handout.
  */
 
@@ -28,14 +28,14 @@ void yyerror(const char *msg); // standard error-handling routine
  * input file. Here is where you declare tokens and types, add precedence
  * and associativity options, and so on.
  */
- 
-/* yylval 
+
+/* yylval
  * ------
  * Here we define the type of the yylval global variable that is used by
  * the scanner to store attibute information about the token just scanned
- * and thus communicate that information to the parser. 
+ * and thus communicate that information to the parser.
  *
- * pp2: You will need to add new fields to this union as you add different 
+ * pp2: You will need to add new fields to this union as you add different
  *      attributes to your non-terminal symbols.
  */
 %union {
@@ -69,18 +69,18 @@ void yyerror(const char *msg); // standard error-handling routine
 %token   T_Bvec2 T_Bvec3 T_Bvec4 T_Ivec2 T_Ivec3 T_Ivec4
 %token   T_Uvec2 T_Uvec3 T_Uvec4 T_Vec2 T_Vec3 T_Vec4
 %token   T_Mat2  T_Mat3 T_Mat4
-%token   T_While T_For T_If T_Else T_Return T_Break T_Continue T_Do 
+%token   T_While T_For T_If T_Else T_Return T_Break T_Continue T_Do
 %token   T_Switch T_Case T_Default
 %token   T_In T_Out T_Const T_Uniform
 %token   T_LeftParen T_RightParen T_LeftBracket T_RightBracket T_LeftBrace T_RightBrace
 %token   T_Dot T_Comma T_Colon T_Semicolon T_Question
 
 %token   <identifier> T_LessEqual T_GreaterEqual T_EQ T_NE
-%token   <identifier> T_And T_Or 
+%token   <identifier> T_And T_Or
 %token   <identifier> T_Plus T_Star
 %token   <identifier> T_MulAssign T_DivAssign T_AddAssign T_SubAssign T_Equal
 %token   <identifier> T_LeftAngle T_RightAngle T_Dash T_Slash
-%token   <identifier> T_Inc T_Dec 
+%token   <identifier> T_Inc T_Dec
 %token   <identifier> T_Identifier
 %token   <integerConstant> T_IntConstant
 %token   <floatConstant> T_FloatConstant
@@ -106,7 +106,7 @@ void yyerror(const char *msg); // standard error-handling routine
  * of the union named "declList" which is of type List<Decl*>.
  * pp2: You'll need to add many of these of your own.
  */
-%type <declList>  DeclList 
+%type <declList>  DeclList
 %type <decl>      Decl
 %type <decl>      Declaration
 %type <funcDecl>  FuncDecl
@@ -130,12 +130,12 @@ void yyerror(const char *msg); // standard error-handling routine
  * -----
  * All productions and actions should be placed between the start and stop
  * %% markers which delimit the Rules section.
-	 
+
  */
-Program   :    DeclList            { 
-                                      @1; 
-                                      /* pp2: The @1 is needed to convince 
-                                       * yacc to set up yylloc. You can remove 
+Program   :    DeclList            {
+                                      @1;
+                                      /* pp2: The @1 is needed to convince
+                                       * yacc to set up yylloc. You can remove
                                        * it once you have other uses of @n*/
                                       Program *program = new Program($1);
                                       // if no errors, advance to next phase
@@ -159,7 +159,7 @@ DeclList  :    DeclList Decl        { ($$=$1)->Append($2); }
  *   function_definition:
  *       function_prototype compound_statement
  */
-   
+
 Decl      :    Declaration                   { $$ = $1; }
           |    FuncDecl CompoundStatement    { $1->SetFunctionBody($2); $$ = $1; }
           ;
@@ -176,15 +176,15 @@ Declaration : FuncDecl T_Semicolon   { $$ = $1; }
             | SingleDecl T_Semicolon { $$ = $1; }
             ;
 
-FuncDecl  : TypeDecl T_Identifier T_LeftParen T_RightParen 
+FuncDecl  : TypeDecl T_Identifier T_LeftParen T_RightParen
                          {
-                            Identifier *id = new Identifier(yylloc, (const char *)$2); 
+                            Identifier *id = new Identifier(yylloc, (const char *)$2);
                             List<VarDecl *> *formals = new List<VarDecl *>;
                             $$ = new FnDecl(id, $1, formals);
                          }
-          | TypeDecl T_Identifier T_LeftParen ParameterList T_RightParen 
+          | TypeDecl T_Identifier T_LeftParen ParameterList T_RightParen
                          {
-                            Identifier *id = new Identifier(yylloc, (const char *)$2); 
+                            Identifier *id = new Identifier(yylloc, (const char *)$2);
                             $$ = new FnDecl(id, $1, $4);
                          }
           ;
@@ -195,32 +195,32 @@ ParameterList : SingleDecl { ($$ = new List<VarDecl *>)->Append($1);  }
 
 SingleDecl    : TypeDecl T_Identifier
                          {
-                            Identifier *id = new Identifier(yylloc, (const char *)$2); 
+                            Identifier *id = new Identifier(yylloc, (const char *)$2);
                             $$ = new VarDecl(id, $1);
                          }
               | TypeQualify TypeDecl T_Identifier
                          {
-                            Identifier *id = new Identifier(yylloc, (const char *)$3); 
+                            Identifier *id = new Identifier(yylloc, (const char *)$3);
                             $$ = new VarDecl(id, $2, $1);
                          }
               | TypeDecl T_Identifier T_Equal Initializer
                          {
                             // incomplete: drop the initializer here
-                            Identifier *id = new Identifier(yylloc, (const char *)$2); 
+                            Identifier *id = new Identifier(yylloc, (const char *)$2);
                             $$ = new VarDecl(id, $1, $4);
                          }
               | TypeQualify TypeDecl T_Identifier T_Equal Initializer
                          {
-                            Identifier *id = new Identifier(yylloc, (const char *)$3); 
+                            Identifier *id = new Identifier(yylloc, (const char *)$3);
                             $$ = new VarDecl(id, $2, $1, $5);
                          }
-              | TypeDecl T_Identifier T_LeftBracket T_IntConstant T_RightBracket 
-                         { 
+              | TypeDecl T_Identifier T_LeftBracket T_IntConstant T_RightBracket
+                         {
                             Identifier *id = new Identifier(@2, (const char *)$2);
                             $$ = new VarDecl(id, new ArrayType(@1, $1, $4));
                          }
-              | TypeQualify TypeDecl T_Identifier T_LeftBracket T_IntConstant T_RightBracket 
-                         { 
+              | TypeQualify TypeDecl T_Identifier T_LeftBracket T_IntConstant T_RightBracket
+                         {
                             Identifier *id = new Identifier(@3, $3);
                             $$ = new VarDecl(id, new ArrayType(@2, $2, $5), $1);
                          }
@@ -261,7 +261,7 @@ Statement      : CompoundStatement         { $$ = $1; }
                ;
 
 SingleStatement   : T_Semicolon      { $$ = new EmptyExpr();  }
-                  | SingleDecl T_Semicolon 
+                  | SingleDecl T_Semicolon
                                      {
                                        $$ = new DeclStmt($1);
                                      }
@@ -297,7 +297,7 @@ JumpStmt           : T_Break   T_Semicolon    { $$ = new BreakStmt(yylloc); }
                    | T_Continue T_Semicolon   { $$ = new ContinueStmt(yylloc); }
                    | T_Return T_Semicolon     { $$ = new ReturnStmt(yylloc); }
                    | T_Return Expression T_Semicolon { $$ = new ReturnStmt(yyloc, $2); }
-                   ; 
+                   ;
 
 WhileStmt          : T_While T_LeftParen Expression T_RightParen Statement { $$ = new WhileStmt($3, $5); }
                    ;
@@ -312,7 +312,7 @@ PrimaryExpr        : T_Identifier    { Identifier *id = new Identifier(yylloc, (
                                        $$ = new VarExpr(yyloc, id);
                                      }
                    | T_IntConstant   { $$ = new IntConstant(yylloc, $1); }
-                   | T_FloatConstant { $$ = new FloatConstant(yylloc, $1); } 
+                   | T_FloatConstant { $$ = new FloatConstant(yylloc, $1); }
                    | T_BoolConstant  { $$ = new BoolConstant(yylloc, $1); }
                    | T_LeftParen Expression T_RightParen { $$ = $2;}
                    ;
@@ -340,12 +340,12 @@ PostfixExpr        : PrimaryExpr     { $$ = $1; }
                    | FunctionCallExpr
                                        {
                                        }
-                   | PostfixExpr T_Inc 
+                   | PostfixExpr T_Inc
                                        {
                                           Operator *op = new Operator(yylloc, (const char *)$2);
                                           $$ = new PostfixExpr($1, op);
                                        }
-                   | PostfixExpr T_Dec 
+                   | PostfixExpr T_Dec
                                        {
                                           Operator *op = new Operator(yylloc, (const char *)$2);
                                           $$ = new PostfixExpr($1, op);
@@ -430,12 +430,12 @@ RelationExpr       : AdditionExpr       { $$ = $1; }
                    ;
 
 EqualityExpr       : RelationExpr       { $$ = $1; }
-                   | EqualityExpr T_EQ RelationExpr 
+                   | EqualityExpr T_EQ RelationExpr
                            {
                              Operator *op = new Operator(yylloc, $2);
                              $$ = new EqualityExpr($1, op, $3);
                            }
-                   | EqualityExpr T_NE RelationExpr 
+                   | EqualityExpr T_NE RelationExpr
                            {
                              Operator *op = new Operator(yylloc, $2);
                              $$ = new EqualityExpr($1, op, $3);
