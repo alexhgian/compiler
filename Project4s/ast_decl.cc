@@ -57,9 +57,9 @@ void VarDecl::Emit(){
     } else {
         llvm::BasicBlock *entryBB = &(irgen.GetFunction()->getEntryBlock());
          v = new llvm::AllocaInst(vType, id->GetName(), entryBB);
-
+        //  llvm::LoadInst *inst = new llvm::LoadInst(v, id->GetName(), entryBB);
     }
-
+    fprintf(stderr, "VarDecl stored name: %s\n", id->GetName());
     Symbol tmpSym(id->GetName(), this, E_VarDecl, v);
 
     symtab.insert(tmpSym);
@@ -149,9 +149,11 @@ void FnDecl::Emit() {
         llvm::Value *storeVal = new llvm::AllocaInst(varType, "arg"+std::to_string(i), tmpEntryBB);
 
         // Symbol *symRes = symtab.find(argDecl->GetIdentifier()->GetName());
-        (void) new llvm::StoreInst(arg, storeVal, false, bbNext);
+        llvm::Value *storeInst = new llvm::StoreInst(arg, storeVal, false, bbNext);
+        // llvm::LoadInst *inst = new llvm::LoadInst(storeVal, "", bbNext);
 
         // Store in symtable
+        fprintf(stderr, "Storing functin args: %s\n", id->GetName());
         Symbol tmpSym(id->GetName(), this, E_VarDecl, storeVal);
         symtab.insert(tmpSym);
         //   Scope::current->AssignVar(argDecl->GetIdentifier(), arg);

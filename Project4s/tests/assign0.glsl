@@ -1,6 +1,11 @@
-int x;
 
-int main()
+
+int main(int x)
 {
-   return 1;
+   int y;
+   int z;
+
+   z = x + y;
+
+   return z;
 }

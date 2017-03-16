@@ -5,12 +5,10 @@ target triple = "x86_64-redhat-linux-gnu"
 define i32 @foo(i32 %x) {
 entry:
   %arg0 = alloca i32
-  %y = alloca i32
-  %inner1 = alloca i32
-  %inner2 = alloca i32
   br label %next
 
 next:                                             ; preds = %entry
   store i32 %x, i32* %arg0
-  ret i32 0
+  %0 = load i32* %arg0
+  ret i32 %0
 }

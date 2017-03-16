@@ -39,24 +39,32 @@ void VarExpr::PrintChildren(int indentLevel) {
     id->Print(indentLevel+1);
 }
 
+/**
+* VarExpr
+* Search the symbol table using identifer name
+* Get the value (llvm:Value) from the symbol
+* Use LoadInst to load the value inside the current BasicBlock
+*/
 llvm::Value* VarExpr::getValue(){
     SymbolTable &symtab = SymbolTable::getInstance();
     IRGenerator &irgen = IRGenerator::getInstance();
 
     Symbol *sym = symtab.find(id->GetName());
     llvm::Value *v = sym->value;
-    // fprintf(stderr, "VarExpr::getValue: %f\n", );
-    // v->dump();
-    // llvm::BasicBlock *bb = irgen.GetBasicBlock();
-    // if(v && bb){
-    //     fprintf(stderr, "VarExpr::getValue: true\n");
+
+    // fprintf(stderr, "VarExpr id->GetName(): %s\n", id->GetName());
+    // fprintf(stderr, "VarExpr symbol name: %s\n", sym->name);
+    // if(sym){
+    //     fprintf(stderr, "VarExpr found: true\n");
     // } else {
-    //     fprintf(stderr, "VarExpr::getValue: false\n");
+    //     fprintf(stderr, "VarExpr found: false\n");
     // }
 
-    // llvm::LoadInst *inst = new llvm::LoadInst(v, id->GetName(), bb);
+    // v->dump();
+    llvm::BasicBlock *bb = irgen.GetBasicBlock();
+    llvm::LoadInst *inst = new llvm::LoadInst(v, "", bb);
 
-    return v;
+    return inst;
 }
 
 Operator::Operator(yyltype loc, const char *tok) : Node(loc) {

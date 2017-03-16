@@ -111,7 +111,7 @@ void DeclStmt::PrintChildren(int indentLevel) {
 }
 
 void DeclStmt::Emit() {
-    decl->Emit(); 
+    decl->Emit();
 }
 
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
@@ -174,6 +174,8 @@ void ReturnStmt::Emit(){
 
     // fprintf(stderr, "ReturnStmt::getValue: %s\n\n", expr->GetPrintNameForNode());
     if (expr) {
+        // Symbol *sym = symtab.find(expr->GetName());
+        // llvm::Value *v = sym->value;
         returnValue = expr->getValue();
     }
     // fprintf(stderr, "ReturnStmt::Create\n\n");
