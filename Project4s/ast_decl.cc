@@ -43,7 +43,7 @@ void VarDecl::PrintChildren(int indentLevel) {
 }
 
 void VarDecl::Emit(){
-    fprintf(stderr, "VarDecl::Emit \n");
+    // fprintf(stderr, "VarDecl::Emit \n");
     SymbolTable &symtab = SymbolTable::getInstance();
     IRGenerator &irgen = IRGenerator::getInstance();
 
@@ -54,7 +54,7 @@ void VarDecl::Emit(){
 
     // Check if variable is global
     if(symtab.isGlobalScope()){
-        fprintf(stderr, "VarDecl (global) id->GetName(): %s\n", id->GetName());
+        // fprintf(stderr, "VarDecl (global) id->GetName(): %s\n", id->GetName());
         v = new llvm::GlobalVariable(
             *irgen.GetOrCreateModule("foo.bc"),
             vType,
@@ -64,7 +64,7 @@ void VarDecl::Emit(){
             id->GetName()
         );
     } else {
-        fprintf(stderr, "VarDecl (local) id->GetName(): %s\n", id->GetName());
+        // fprintf(stderr, "VarDecl (local) id->GetName(): %s\n", id->GetName());
         llvm::BasicBlock *entryBB = &(irgen.GetFunction()->getEntryBlock());
          v = new llvm::AllocaInst(vType, id->GetName(), entryBB);
         //  llvm::LoadInst *inst = new llvm::LoadInst(v, id->GetName(), entryBB);
@@ -157,7 +157,7 @@ void FnDecl::Emit() {
         // printf(stderr, "%s\n", "arg"+std::to_string(i));
         llvm::BasicBlock *tmpEntryBB = &(irgen.GetFunction()->getEntryBlock());
         char argName[32];
-        sprintf (argName,"arg%d",i);
+        // sprintf (argName,"arg%d",i);
         llvm::Value *storeVal = new llvm::AllocaInst(varType, argName, tmpEntryBB);
 
         // Symbol *symRes = symtab.find(argDecl->GetIdentifier()->GetName());
@@ -165,7 +165,7 @@ void FnDecl::Emit() {
         // llvm::LoadInst *inst = new llvm::LoadInst(storeVal, "", bbNext);
 
         // Store in symtable
-        fprintf(stderr, "Storing functin args: %s\n", id->GetName());
+        // fprintf(stderr, "Storing functin args: %s\n", id->GetName());
         Symbol tmpSym(id->GetName(), this, E_VarDecl, storeVal);
         symtab.insert(tmpSym);
         //   Scope::current->AssignVar(argDecl->GetIdentifier(), arg);

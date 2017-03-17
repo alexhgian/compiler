@@ -38,7 +38,7 @@ void Program::Emit() {
     llvm::WriteBitcodeToFile(mod, llvm::outs());
 
     //uncomment the next line to generate the human readable/assembly file
-    mod->dump();
+    // mod->dump();
 }
 
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
@@ -48,7 +48,7 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
 }
 
 void StmtBlock::Emit() {
-  fprintf(stderr, "StmtBlock::Emit\n\n");
+  // fprintf(stderr, "StmtBlock::Emit\n\n");
   SymbolTable &symTable = SymbolTable::getInstance();
   IRGenerator &irgen = IRGenerator::getInstance();
 
@@ -59,8 +59,8 @@ void StmtBlock::Emit() {
   for (int i = 0; i < stmts->NumElements(); i++) {
        if (irgen.GetBasicBlock()->getTerminator()){ break; }
        Stmt* st = stmts->Nth(i);
-        fprintf(stderr, "================================================\n");
-       fprintf(stderr, "StmtBlock Stmt ForLoop: %s\n\n",st->GetPrintNameForNode());
+        // fprintf(stderr, "================================================\n");
+    //    fprintf(stderr, "StmtBlock Stmt ForLoop: %s\n\n",st->GetPrintNameForNode());
        st->Emit();
   }
 
@@ -138,7 +138,7 @@ void ReturnStmt::PrintChildren(int indentLevel) {
 }
 
 void ReturnStmt::Emit(){
-    fprintf(stderr, "ReturnStmt::Emit\n\n");
+    // fprintf(stderr, "ReturnStmt::Emit\n\n");
     SymbolTable &symTable = SymbolTable::getInstance();
     IRGenerator &irgen = IRGenerator::getInstance();
 

@@ -47,7 +47,7 @@ void VarExpr::PrintChildren(int indentLevel) {
 * Use LoadInst to load the value inside the current BasicBlock
 */
 llvm::Value* VarExpr::getValue(){
-    fprintf(stderr, "VarExpr:getValue\n");
+    // fprintf(stderr, "VarExpr:getValue\n");
     SymbolTable &symtab = SymbolTable::getInstance();
     IRGenerator &irgen = IRGenerator::getInstance();
 
@@ -173,7 +173,7 @@ llvm::BinaryOperator::BinaryOps toBinaryOps(bool isFloat, Operator *op){
 }
 
 llvm::Value* ArithmeticExpr::getValue(){
-    fprintf(stderr, "ArithmeticExpr::getValue() %s\n", "hi");
+    // fprintf(stderr, "ArithmeticExpr::getValue() %s\n", "hi");
     IRGenerator &irgen = IRGenerator::getInstance();
 
     llvm::Value *leftOp = left->getValue();
@@ -187,16 +187,16 @@ llvm::Value* ArithmeticExpr::getValue(){
 }
 
 llvm::Value* PostfixExpr::getValue(){
-    fprintf(stderr, "PostfixExpr::getValue()\n");
+    // fprintf(stderr, "PostfixExpr::getValue()\n");
     return NULL;
 }
 void AssignExpr::Emit(){
-    fprintf(stderr, "AssignExpr::Emit()\n");
+    // fprintf(stderr, "AssignExpr::Emit()\n");
     llvm::Value* assVal = this->getValue();
 }
 
 llvm::Value* AssignExpr::getValue(){
-    fprintf(stderr, "AssignExpr::getValue()\n");
+    // fprintf(stderr, "AssignExpr::getValue()\n");
     IRGenerator &irgen = IRGenerator::getInstance();
     SymbolTable &symtab = SymbolTable::getInstance();
 
@@ -204,7 +204,7 @@ llvm::Value* AssignExpr::getValue(){
 
     // Handle case: z = x + y;
     if(op->IsOp("=")){
-        fprintf(stderr, "AssignExpr op is `=`\n");
+        // fprintf(stderr, "AssignExpr op is `=`\n");
         // Evaluate rhs
         llvm::Value *rVal = right->getValue();
 
@@ -222,16 +222,16 @@ llvm::Value* AssignExpr::getValue(){
         llvm::Value *storeInst = new llvm::StoreInst(rVal, sym->value, false, irgen.GetBasicBlock());
         assignValue = rVal;
     }
-    
+
     return assignValue;
 }
 
 llvm::Value* EqualityExpr::getValue(){
-    fprintf(stderr, "EqualityExpr::getValue()\n");
+    // fprintf(stderr, "EqualityExpr::getValue()\n");
     return NULL;
 }
 llvm::Value* RelationalExpr::getValue(){
-    fprintf(stderr, "RelationalExpr::getValue()\n");
+    // fprintf(stderr, "RelationalExpr::getValue()\n");
     return NULL;
 }
 
