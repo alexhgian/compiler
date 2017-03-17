@@ -5,7 +5,7 @@
 #
 # Simple tester file for IR Generation of the GLSL Compiler
 #
-import os
+import os, sys
 from subprocess import *
 
 TEST_DIRECTORY = '.tmp'
@@ -70,6 +70,11 @@ def colorifyTestResult(glslFile, result):
 
 def printTestResults(results, total):
   print 'SCORE: ' + '\033[1;31m' + str(results) + '/' + str(total) + '\033[0;0m'
+  if(results == total):
+      sys.exit(0)
+  else:
+      sys.exit(results)
+
 
 
 # entry point
