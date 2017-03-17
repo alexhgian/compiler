@@ -54,13 +54,22 @@ void VarDecl::Emit(){
 
     // Check if variable is global
     if(symtab.isGlobalScope()){
-         v = new llvm::GlobalVariable(vType, false, llvm::GlobalValue::ExternalLinkage, NULL, id->GetName());
+        fprintf(stderr, "VarDecl (global) id->GetName(): %s\n", id->GetName());
+        v = new llvm::GlobalVariable(
+            *irgen.GetOrCreateModule("foo.bc"),
+            vType,
+            false,
+            llvm::GlobalValue::ExternalLinkage,
+            llvm::Constant::getNullValue(vType),
+            id->GetName()
+        );
     } else {
+        fprintf(stderr, "VarDecl (local) id->GetName(): %s\n", id->GetName());
         llvm::BasicBlock *entryBB = &(irgen.GetFunction()->getEntryBlock());
          v = new llvm::AllocaInst(vType, id->GetName(), entryBB);
         //  llvm::LoadInst *inst = new llvm::LoadInst(v, id->GetName(), entryBB);
     }
-    fprintf(stderr, "VarDecl id->GetName(): %s\n", id->GetName());
+
     Symbol tmpSym(id->GetName(), this, E_VarDecl, v);
 
     symtab.insert(tmpSym);

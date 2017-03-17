@@ -200,6 +200,8 @@ llvm::Value* AssignExpr::getValue(){
     IRGenerator &irgen = IRGenerator::getInstance();
     SymbolTable &symtab = SymbolTable::getInstance();
 
+    llvm::Value *assignValue;
+
     // Handle case: z = x + y;
     if(op->IsOp("=")){
         fprintf(stderr, "AssignExpr op is `=`\n");
@@ -218,9 +220,10 @@ llvm::Value* AssignExpr::getValue(){
 
         // Store rhs to lhs
         llvm::Value *storeInst = new llvm::StoreInst(rVal, sym->value, false, irgen.GetBasicBlock());
+        assignValue = rVal;
     }
-
-    return NULL;
+    
+    return assignValue;
 }
 
 llvm::Value* EqualityExpr::getValue(){

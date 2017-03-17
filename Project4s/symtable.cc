@@ -69,9 +69,10 @@
  }
 
  Symbol *SymbolTable::find(const char* name){
-     ScopedTable *scope = tables.back();
-     if(scope){
-         return scope->find(name);
-     }
-     return NULL;
+    int tableSize=tables.size()-1;
+    for(int i = tableSize; i>=0; i--){
+        Symbol *found = tables[i]->find(name);
+        if (found){ return found; }
+    }
+    return NULL;
  }
