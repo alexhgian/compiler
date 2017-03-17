@@ -40,7 +40,7 @@ class Stmt : public Node
   public:
      Stmt() : Node() {}
      Stmt(yyltype loc) : Node(loc) {}
-     virtual void Emit() {}
+     virtual void Emit() { fprintf(stderr, "Stmt::Emit\n");}
 };
 
 class StmtBlock : public Stmt

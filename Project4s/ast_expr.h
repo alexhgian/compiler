@@ -187,6 +187,7 @@ class AssignExpr : public CompoundExpr
   public:
     AssignExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "AssignExpr"; }
+    void Emit();
     llvm::Value* getValue();
 };
 
@@ -213,6 +214,10 @@ class LValue : public Expr
 {
   public:
     LValue(yyltype loc) : Expr(loc) {}
+     llvm::Value* getValue(){
+         fprintf(stderr, "LValue::getValue\n");
+         return NULL;
+     }
 };
 
 class ArrayAccess : public LValue

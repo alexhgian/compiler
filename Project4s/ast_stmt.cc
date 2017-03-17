@@ -58,8 +58,10 @@ void StmtBlock::Emit() {
 
   for (int i = 0; i < stmts->NumElements(); i++) {
        if (irgen.GetBasicBlock()->getTerminator()){ break; }
-       fprintf(stderr, "StmtBlock::Loop\n\n");
-       stmts->Nth(i)->Emit();
+       Stmt* st = stmts->Nth(i);
+        fprintf(stderr, "================================================\n");
+       fprintf(stderr, "StmtBlock Stmt ForLoop: %s\n\n",st->GetPrintNameForNode());
+       st->Emit();
   }
 
   // Leave block scope
@@ -81,6 +83,7 @@ void DeclStmt::PrintChildren(int indentLevel) {
 }
 
 void DeclStmt::Emit() {
+    // fprintf(stderr, "DeclStmt::Emit\n\n");
     decl->Emit();
 }
 
@@ -135,7 +138,7 @@ void ReturnStmt::PrintChildren(int indentLevel) {
 }
 
 void ReturnStmt::Emit(){
-    // fprintf(stderr, "ReturnStmt::Emit\n\n");
+    fprintf(stderr, "ReturnStmt::Emit\n\n");
     SymbolTable &symTable = SymbolTable::getInstance();
     IRGenerator &irgen = IRGenerator::getInstance();
 

@@ -47,6 +47,7 @@ void VarExpr::PrintChildren(int indentLevel) {
 * Use LoadInst to load the value inside the current BasicBlock
 */
 llvm::Value* VarExpr::getValue(){
+    fprintf(stderr, "VarExpr:getValue\n");
     SymbolTable &symtab = SymbolTable::getInstance();
     IRGenerator &irgen = IRGenerator::getInstance();
 
@@ -189,9 +190,36 @@ llvm::Value* PostfixExpr::getValue(){
     fprintf(stderr, "PostfixExpr::getValue()\n");
     return NULL;
 }
+void AssignExpr::Emit(){
+    fprintf(stderr, "AssignExpr::Emit()\n");
+    llvm::Value* assVal = this->getValue();
+}
 
 llvm::Value* AssignExpr::getValue(){
     fprintf(stderr, "AssignExpr::getValue()\n");
+    IRGenerator &irgen = IRGenerator::getInstance();
+    SymbolTable &symtab = SymbolTable::getInstance();
+
+    // Handle case: z = x + y;
+    if(op->IsOp("=")){
+        fprintf(stderr, "AssignExpr op is `=`\n");
+        // Evaluate rhs
+        llvm::Value *rVal = right->getValue();
+
+        // Cast the lhs to a VarExpr
+        VarExpr *leftVar = dynamic_cast<VarExpr*>(left);
+
+        // Search scope for var
+        // TODO: refactor other instances of StoreInst
+        // This can be a helper
+        Identifier *varId = leftVar->GetIdentifier();
+        const char *varName = varId->GetName();
+        Symbol * sym = symtab.find(varName);
+
+        // Store rhs to lhs
+        llvm::Value *storeInst = new llvm::StoreInst(rVal, sym->value, false, irgen.GetBasicBlock());
+    }
+
     return NULL;
 }
 
