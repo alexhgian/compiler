@@ -7,15 +7,19 @@ entry:
   %arg0 = alloca i32
   %y = alloca i32
   %z = alloca i32
+  %w = alloca i32
   br label %next
 
 next:                                             ; preds = %entry
   store i32 %x, i32* %arg0
+  store i32 1, i32* %w
   store i32 2, i32* %y
   %0 = load i32* %arg0
   %1 = load i32* %y
   %2 = add i32 %0, %1
-  store i32 %2, i32* %z
-  %3 = load i32* %z
-  ret i32 %3
+  %3 = load i32* %w
+  %4 = add i32 %2, %3
+  store i32 %4, i32* %z
+  %5 = load i32* %z
+  ret i32 %5
 }
