@@ -11,6 +11,7 @@ entry:
 
 next:                                             ; preds = %entry
   store i32 %x, i32* %arg0
+  store i32 2, i32* %y
   %0 = load i32* %arg0
   %1 = load i32* %y
   %2 = add i32 %0, %1
