@@ -7,7 +7,7 @@
 #include "ast_stmt.h"
 #include "symtable.h"
 #include "irgen.h"
-// #include <stdio.h>
+#include <stdio.h>
 
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
@@ -148,7 +148,7 @@ void FnDecl::Emit() {
         // printf(stderr, "%s\n", "arg"+std::to_string(i));
         llvm::BasicBlock *tmpEntryBB = &(irgen.GetFunction()->getEntryBlock());
         char argName[32];
-        std::sprintf (argName,"arg%d",i);
+        sprintf (argName,"arg%d",i);
         llvm::Value *storeVal = new llvm::AllocaInst(varType, argName, tmpEntryBB);
 
         // Symbol *symRes = symtab.find(argDecl->GetIdentifier()->GetName());
