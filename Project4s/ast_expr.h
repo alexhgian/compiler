@@ -57,6 +57,7 @@ class IntConstant : public Expr
 
   public:
     IntConstant(yyltype loc, int val);
+    IntConstant(int val);
     const char *GetPrintNameForNode() { return "IntConstant"; }
     void PrintChildren(int indentLevel);
     llvm::Value* getValue(){
@@ -117,7 +118,7 @@ class VarExpr : public Expr
     void PrintChildren(int indentLevel);
     Identifier *GetIdentifier() {return id;}
     llvm::Value* getValue();
-    llvm::Value* store(llvm::Value *rVal);
+    llvm::Value* store(llvm::Value *rVal, bool isVolatile = false);
 };
 
 class Operator : public Node
@@ -146,10 +147,6 @@ class CompoundExpr : public Expr
     CompoundExpr(Operator *op, Expr *rhs);             // for unary
     CompoundExpr(Expr *lhs, Operator *op);             // for unary
     void PrintChildren(int indentLevel);
-    llvm::Value* getValue(){
-        fprintf(stderr, "CompoundExpr\n");
-        return NULL;
-    }
 };
 
 class ArithmeticExpr : public CompoundExpr
@@ -159,6 +156,7 @@ class ArithmeticExpr : public CompoundExpr
     ArithmeticExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     const char *GetPrintNameForNode() { return "ArithmeticExpr"; }
     llvm::Value* getValue();
+    void Emit();
 };
 
 class RelationalExpr : public CompoundExpr
@@ -199,6 +197,7 @@ class PostfixExpr : public CompoundExpr
   public:
     PostfixExpr(Expr *lhs, Operator *op) : CompoundExpr(lhs,op) {}
     const char *GetPrintNameForNode() { return "PostfixExpr"; }
+    void Emit();
      llvm::Value* getValue();
 
 };
