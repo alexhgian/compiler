@@ -169,7 +169,7 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
     (field=f)->SetParent(this);
 }
 
-llvm::BinaryOperator::BinaryOps toBinaryOps(bool isFloat, Operator *op){
+llvm::BinaryOperator::BinaryOps getBinaryOps(bool isFloat, Operator *op){
     llvm::BinaryOperator::BinaryOps _op;
     if (op->IsOp("+") || op->IsOp("++")) {
         if(isFloat) {
@@ -198,6 +198,40 @@ llvm::BinaryOperator::BinaryOps toBinaryOps(bool isFloat, Operator *op){
     }
     return _op;
 }
+
+llvm::BinaryOperator::BinaryOps getLogicalBinaryOps(Operator *op){
+    if (op->IsOp("&&")) {
+        return llvm::BinaryOperator::And;
+    } else {
+        return llvm::BinaryOperator::Or;
+    }
+}
+
+llvm::CmpInst::OtherOps getCmpOp(bool isFloat){
+    if(isFloat){
+        return llvm::FCmpInst::FCmp;
+    } else {
+        return llvm::ICmpInst::ICmp;
+    }
+}
+
+llvm::CmpInst::Predicate getEqualityOP(bool isFloat, Operator *op){
+    if (op->IsOp("==")) { // Equal
+        if(isFloat) {
+            return llvm::CmpInst::FCMP_OEQ;
+        } else {
+            return llvm::CmpInst::ICMP_EQ;
+        }
+
+    } else { // Not Equal
+        if(isFloat) {
+            return llvm::CmpInst::FCMP_ONE;
+        } else {
+            return llvm::CmpInst::ICMP_NE;
+        }
+    }
+}
+
 void ArithmeticExpr::Emit(){
     fprintf(stderr, "ArithmeticExpr::Emit(): %s\n", op->toString());
     this->getValue();
@@ -222,7 +256,7 @@ llvm::Value* ArithmeticExpr::getValue(){
 
     bool isFloat = leftOp->getType()->isFloatTy();
 
-    llvm::BinaryOperator::BinaryOps binOp = toBinaryOps(isFloat, op);
+    llvm::BinaryOperator::BinaryOps binOp = getBinaryOps(isFloat, op);
 
     llvm::Value *retVal = llvm::BinaryOperator::Create(binOp, leftOp, rightOp, "", irgen.GetBasicBlock());
 
@@ -266,7 +300,7 @@ llvm::Value* PostfixExpr::getValue(){
     // Check if it is float
     bool isFloat = leftOp->getType()->isFloatTy();
 
-    llvm::BinaryOperator::BinaryOps binOp = toBinaryOps(isFloat, op);
+    llvm::BinaryOperator::BinaryOps binOp = getBinaryOps(isFloat, op);
     llvm::Value *retVal = llvm::BinaryOperator::Create(binOp, leftOp, rightOp, "", irgen.GetBasicBlock());
 
     VarExpr *leftVar = dynamic_cast<VarExpr*>(left);
@@ -334,8 +368,35 @@ llvm::Value* AssignExpr::getValue(){
 
 llvm::Value* EqualityExpr::getValue(){
     fprintf(stderr, "EqualityExpr::getValue()\n");
-    return NULL;
+    IRGenerator &irgen = IRGenerator::getInstance();
+
+    llvm::Value *lVal = left->getValue();
+    llvm::Value *rVal = right->getValue();
+
+    bool isFloat = lVal->getType()->isFloatTy() || lVal->getType()->isVectorTy();
+
+    llvm::CmpInst::Predicate preOp = getEqualityOP(isFloat, op);
+
+    llvm::Value *retVal = llvm::CmpInst::Create(getCmpOp(isFloat), preOp, lVal, rVal, "", irgen.GetBasicBlock());
+
+    // TODO: Handle vector result w/ boolean
+
+    return retVal;
 }
+
+llvm::Value* LogicalExpr::getValue(){
+    fprintf(stderr, "LogicalExpr::getValue()\n");
+    IRGenerator &irgen = IRGenerator::getInstance();
+    SymbolTable &symtab = SymbolTable::getInstance();
+
+    llvm::Value *leftOp = left->getValue();
+    llvm::Value *rightOp = right->getValue();
+
+    llvm::BinaryOperator::BinaryOps logicOp = getLogicalBinaryOps(op);
+
+    return llvm::BinaryOperator::Create(logicOp, leftOp, rightOp, "", irgen.GetBasicBlock());
+}
+
 llvm::Value* RelationalExpr::getValue(){
     fprintf(stderr, "RelationalExpr::getValue()\n");
     return NULL;
@@ -344,6 +405,11 @@ llvm::Value* RelationalExpr::getValue(){
 void FieldAccess::PrintChildren(int indentLevel) {
     if (base) base->Print(indentLevel+1);
     field->Print(indentLevel+1);
+}
+
+llvm::Value* FieldAccess::getValue(){
+    fprintf(stderr, "FieldAccess::getValue()\n");
+    return NULL;
 }
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
