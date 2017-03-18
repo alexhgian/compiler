@@ -117,6 +117,7 @@ class VarExpr : public Expr
     void PrintChildren(int indentLevel);
     Identifier *GetIdentifier() {return id;}
     llvm::Value* getValue();
+    llvm::Value* store(llvm::Value *rVal);
 };
 
 class Operator : public Node

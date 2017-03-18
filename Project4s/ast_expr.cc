@@ -69,6 +69,18 @@ llvm::Value* VarExpr::getValue(){
     return inst;
 }
 
+llvm::Value *VarExpr::store(llvm::Value *rVal){
+    SymbolTable &symtab = SymbolTable::getInstance();
+    IRGenerator &irgen = IRGenerator::getInstance();
+
+    // Find the value for lhs var
+    const char *varName = id->GetName();
+    Symbol * sym = symtab.find(varName);
+
+    llvm::Value *storeInst = new llvm::StoreInst(rVal, sym->value, false, irgen.GetBasicBlock());
+    return storeInst;
+}
+
 Operator::Operator(yyltype loc, const char *tok) : Node(loc) {
     Assert(tok != NULL);
     strncpy(tokenString, tok, sizeof(tokenString));
@@ -230,16 +242,53 @@ llvm::Value* AssignExpr::getValue(){
         // Create a new ArithmeticExpr to handle addition of the left variable expr with the right expr
         // Using custom Operator to perform addition operation
         Operator *addOp = new Operator("+");
+
         // ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs)
         ArithmeticExpr *aExpr = new ArithmeticExpr(left, addOp, right);
         llvm::Value *rVal = aExpr->getValue();
 
         // Find the value for lhs var
         VarExpr *leftVar = dynamic_cast<VarExpr*>(left);
-        Identifier *varId = leftVar->GetIdentifier();
-        const char *varName = varId->GetName();
-        Symbol * sym = symtab.find(varName);
-        llvm::Value *storeInst = new llvm::StoreInst(rVal, sym->value, false, irgen.GetBasicBlock());
+        leftVar->store(rVal);
+
+        // Return rhs
+        assignValue = rVal;
+    } else if (op->IsOp("-=")){
+        fprintf(stderr, "AssignExpr op is `-=`\n");
+
+        Operator *addOp = new Operator("-");
+        ArithmeticExpr *aExpr = new ArithmeticExpr(left, addOp, right);
+        llvm::Value *rVal = aExpr->getValue();
+
+        // Find the value for lhs var
+        VarExpr *leftVar = dynamic_cast<VarExpr*>(left);
+        leftVar->store(rVal);
+
+        // Return rhs
+        assignValue = rVal;
+    }  else if (op->IsOp("*=")){
+        fprintf(stderr, "AssignExpr op is `-=`\n");
+
+        Operator *addOp = new Operator("*");
+        ArithmeticExpr *aExpr = new ArithmeticExpr(left, addOp, right);
+        llvm::Value *rVal = aExpr->getValue();
+
+        // Find the value for lhs var
+        VarExpr *leftVar = dynamic_cast<VarExpr*>(left);
+        leftVar->store(rVal);
+
+        // Return rhs
+        assignValue = rVal;
+    } else if (op->IsOp("/=")){
+        fprintf(stderr, "AssignExpr op is `-=`\n");
+
+        Operator *addOp = new Operator("/");
+        ArithmeticExpr *aExpr = new ArithmeticExpr(left, addOp, right);
+        llvm::Value *rVal = aExpr->getValue();
+
+        // Find the value for lhs var
+        VarExpr *leftVar = dynamic_cast<VarExpr*>(left);
+        leftVar->store(rVal);
 
         // Return rhs
         assignValue = rVal;
