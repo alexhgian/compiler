@@ -7,7 +7,7 @@ int main(int x)
    w = 1;
    y = 2;
 
-   z = x + y + w;
+   z = x = y + w;
 
    return z; // result should be 4 = 2 + 2
 }

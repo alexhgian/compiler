@@ -157,7 +157,7 @@ void FnDecl::Emit() {
         // printf(stderr, "%s\n", "arg"+std::to_string(i));
         llvm::BasicBlock *tmpEntryBB = &(irgen.GetFunction()->getEntryBlock());
         char argName[32];
-        // sprintf (argName,"arg%d",i);
+        sprintf (argName,"arg%d",i);
         llvm::Value *storeVal = new llvm::AllocaInst(varType, argName, tmpEntryBB);
 
         // Symbol *symRes = symtab.find(argDecl->GetIdentifier()->GetName());
