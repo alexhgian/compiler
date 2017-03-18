@@ -236,13 +236,42 @@ llvm::Value* ArithmeticExpr::getValue(){
     }
 }
 
+/**
+* PostfixExpr::Emit
+* Handles postfix bitcode i.e. x++
+* 1) Return value before evaluating unary expression
+* 2) Calculate unary expr
+*
+* TODO: Handle swizzle
+*/
 void PostfixExpr::Emit(){
     fprintf(stderr, "PostfixExpr::Emit()\n");
+    // Return value before evaluating unary expression
+    llvm::Value* assVal = this->getValue();
 }
 
 llvm::Value* PostfixExpr::getValue(){
     fprintf(stderr, "PostfixExpr::getValue()\n");
-    return NULL;
+    IRGenerator &irgen = IRGenerator::getInstance();
+
+    llvm::Value *orgVal = left->getValue();
+
+    llvm::Value *leftOp;
+    llvm::Value *rightOp;
+
+    Expr *one = new IntConstant(1);
+    rightOp = one->getValue();
+    leftOp = orgVal;
+
+    // Check if it is float
+    bool isFloat = leftOp->getType()->isFloatTy();
+
+    llvm::BinaryOperator::BinaryOps binOp = toBinaryOps(isFloat, op);
+    llvm::Value *retVal = llvm::BinaryOperator::Create(binOp, leftOp, rightOp, "", irgen.GetBasicBlock());
+
+    VarExpr *leftVar = dynamic_cast<VarExpr*>(left);
+    leftVar->store(retVal, true);
+    return orgVal;
 }
 void AssignExpr::Emit(){
     fprintf(stderr, "AssignExpr::Emit()\n");
