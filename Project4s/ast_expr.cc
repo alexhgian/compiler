@@ -195,15 +195,7 @@ llvm::BinaryOperator::BinaryOps toBinaryOps(bool isFloat, Operator *op){
 }
 void ArithmeticExpr::Emit(){
     fprintf(stderr, "ArithmeticExpr::Emit(): %s\n", op->toString());
-    if(left){
-        fprintf(stderr, "ArithmeticExpr left true\n");
-        this->getValue();
-    } else {
-        llvm::Value *val = this->getValue();
-
-        VarExpr *rightVar = dynamic_cast<VarExpr*>(right);
-        rightVar->store(val, true);
-    }
+    this->getValue();
 }
 
 llvm::Value* ArithmeticExpr::getValue(){
@@ -212,6 +204,7 @@ llvm::Value* ArithmeticExpr::getValue(){
 
     llvm::Value *leftOp;
     llvm::Value *rightOp;
+
     if(left){
         leftOp = left->getValue();
         rightOp = right->getValue();
@@ -227,7 +220,15 @@ llvm::Value* ArithmeticExpr::getValue(){
 
     llvm::BinaryOperator::BinaryOps binOp = toBinaryOps(isFloat, op);
 
-    return llvm::BinaryOperator::Create(binOp, leftOp, rightOp, "", irgen.GetBasicBlock());
+    llvm::Value *retVal = llvm::BinaryOperator::Create(binOp, leftOp, rightOp, "", irgen.GetBasicBlock());
+
+    if(left){
+        return retVal;
+    } else {
+        VarExpr *rightVar = dynamic_cast<VarExpr*>(right);
+        rightVar->store(retVal, true);
+        return retVal;
+    }
 }
 
 void PostfixExpr::Emit(){
