@@ -73,6 +73,10 @@ Operator::Operator(yyltype loc, const char *tok) : Node(loc) {
     Assert(tok != NULL);
     strncpy(tokenString, tok, sizeof(tokenString));
 }
+Operator::Operator(const char *tok) {
+    Assert(tok != NULL);
+    strncpy(tokenString, tok, sizeof(tokenString));
+}
 
 void Operator::PrintChildren(int indentLevel) {
     printf("%s",tokenString);
@@ -173,7 +177,7 @@ llvm::BinaryOperator::BinaryOps toBinaryOps(bool isFloat, Operator *op){
 }
 
 llvm::Value* ArithmeticExpr::getValue(){
-    // fprintf(stderr, "ArithmeticExpr::getValue() %s\n", "hi");
+    fprintf(stderr, "ArithmeticExpr::getValue() %s\n", "hi");
     IRGenerator &irgen = IRGenerator::getInstance();
 
     llvm::Value *leftOp = left->getValue();
@@ -187,16 +191,16 @@ llvm::Value* ArithmeticExpr::getValue(){
 }
 
 llvm::Value* PostfixExpr::getValue(){
-    // fprintf(stderr, "PostfixExpr::getValue()\n");
+    fprintf(stderr, "PostfixExpr::getValue()\n");
     return NULL;
 }
 void AssignExpr::Emit(){
-    // fprintf(stderr, "AssignExpr::Emit()\n");
+    fprintf(stderr, "AssignExpr::Emit()\n");
     llvm::Value* assVal = this->getValue();
 }
 
 llvm::Value* AssignExpr::getValue(){
-    // fprintf(stderr, "AssignExpr::getValue()\n");
+    fprintf(stderr, "AssignExpr::getValue() op: %s\n", op->toString());
     IRGenerator &irgen = IRGenerator::getInstance();
     SymbolTable &symtab = SymbolTable::getInstance();
 
@@ -221,17 +225,35 @@ llvm::Value* AssignExpr::getValue(){
         // Store rhs to lhs
         llvm::Value *storeInst = new llvm::StoreInst(rVal, sym->value, false, irgen.GetBasicBlock());
         assignValue = rVal;
+    } else if (op->IsOp("+=")){
+        fprintf(stderr, "AssignExpr op is `+=`\n");
+        // Create a new ArithmeticExpr to handle addition of the left variable expr with the right expr
+        // Using custom Operator to perform addition operation
+        Operator *addOp = new Operator("+");
+        // ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs)
+        ArithmeticExpr *aExpr = new ArithmeticExpr(left, addOp, right);
+        llvm::Value *rVal = aExpr->getValue();
+
+        // Find the value for lhs var
+        VarExpr *leftVar = dynamic_cast<VarExpr*>(left);
+        Identifier *varId = leftVar->GetIdentifier();
+        const char *varName = varId->GetName();
+        Symbol * sym = symtab.find(varName);
+        llvm::Value *storeInst = new llvm::StoreInst(rVal, sym->value, false, irgen.GetBasicBlock());
+
+        // Return rhs
+        assignValue = rVal;
     }
 
     return assignValue;
 }
 
 llvm::Value* EqualityExpr::getValue(){
-    // fprintf(stderr, "EqualityExpr::getValue()\n");
+    fprintf(stderr, "EqualityExpr::getValue()\n");
     return NULL;
 }
 llvm::Value* RelationalExpr::getValue(){
-    // fprintf(stderr, "RelationalExpr::getValue()\n");
+    fprintf(stderr, "RelationalExpr::getValue()\n");
     return NULL;
 }
 
