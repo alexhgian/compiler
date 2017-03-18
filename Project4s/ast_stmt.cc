@@ -26,6 +26,7 @@ void Program::PrintChildren(int indentLevel) {
 
 void Program::Emit() {
     IRGenerator &irgen = IRGenerator::getInstance();
+    SymbolTable &symtab = SymbolTable::getInstance();
     llvm::Module *mod = irgen.GetOrCreateModule("foo.bc");
 
     for (int i = 0; i < decls->NumElements(); ++i) {

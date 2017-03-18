@@ -46,6 +46,7 @@ void VarDecl::Emit(){
     // fprintf(stderr, "VarDecl::Emit \n");
     SymbolTable &symtab = SymbolTable::getInstance();
     IRGenerator &irgen = IRGenerator::getInstance();
+    llvm::Module *mod = irgen.GetOrCreateModule(NULL);
 
     Identifier *id = this->GetIdentifier();
 
@@ -54,15 +55,18 @@ void VarDecl::Emit(){
 
     // Check if variable is global
     if(symtab.isGlobalScope()){
-        // fprintf(stderr, "VarDecl (global) id->GetName(): %s\n", id->GetName());
-        v = new llvm::GlobalVariable(
-            *irgen.GetOrCreateModule("foo.bc"),
-            vType,
-            false,
-            llvm::GlobalValue::ExternalLinkage,
-            llvm::Constant::getNullValue(vType),
-            id->GetName()
-        );
+        fprintf(stderr, "VarDecl (global) id->GetName(): %s\n", id->GetName());
+        // v = new llvm::GlobalVariable(
+        //     *irgen.GetOrCreateModule("foo.bc"),
+        //     vType,
+        //     false,
+        //     llvm::GlobalValue::ExternalLinkage,
+        //     llvm::Constant::getNullValue(vType),
+        //     id->GetName()
+        // );
+        llvm::GlobalVariable *globalVar = llvm::cast<llvm::GlobalVariable>(mod->getOrInsertGlobal(id->GetName(), vType));
+        globalVar->setConstant(false);
+        v = globalVar;
     } else {
         // fprintf(stderr, "VarDecl (local) id->GetName(): %s\n", id->GetName());
         llvm::BasicBlock *entryBB = &(irgen.GetFunction()->getEntryBlock());

@@ -41,7 +41,14 @@
      // Search for the symbol
      SymbolIterator it = symbols.find(name);
      // dereference the iterator's element (Symbol)
-     return &it->second;
+     if(it == symbols.end()){
+        return NULL;
+     } else {
+        //  fprintf(stderr, "SymbolIterator\n");
+         Symbol *tmp = &it->second;
+        //  fprintf(stderr, "ScopedTable::find [%s]\n", tmp->name);
+         return tmp;
+     }
  }
 
  /**
@@ -69,10 +76,14 @@
  }
 
  Symbol *SymbolTable::find(const char* name){
+    // fprintf(stderr, "SymbolTable::find\n");
     int tableSize=tables.size()-1;
     for(int i = tableSize; i>=0; i--){
+        // fprintf(stderr, "SymbolTable::find forLoop [%d]\n", i);
         Symbol *found = tables[i]->find(name);
+
         if (found){ return found; }
     }
+    // fprintf(stderr, "SymbolTable::find NULL\n");
     return NULL;
  }

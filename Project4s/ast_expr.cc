@@ -52,25 +52,30 @@ void VarExpr::PrintChildren(int indentLevel) {
 * Use LoadInst to load the value inside the current BasicBlock
 */
 llvm::Value* VarExpr::getValue(){
-    // fprintf(stderr, "VarExpr:getValue\n");
+    fprintf(stderr, "VarExpr:getValue\n");
     SymbolTable &symtab = SymbolTable::getInstance();
     IRGenerator &irgen = IRGenerator::getInstance();
 
     Symbol *sym = symtab.find(id->GetName());
-    llvm::Value *v = sym->value;
+    llvm::Value *val = NULL;
 
     // fprintf(stderr, "VarExpr id->GetName(): %s\n", id->GetName());
     // fprintf(stderr, "VarExpr symbol name: %s\n", sym->name);
-    // if(sym){
-    //     fprintf(stderr, "VarExpr found: true\n");
-    // } else {
-    //     fprintf(stderr, "VarExpr found: false\n");
-    // }
+    if(sym){
+        // fprintf(stderr, "Symbol found: true | %s\n", sym->name );
+        val = sym->value;
+        VarDecl* varDecl = dynamic_cast<VarDecl*>(sym->decl);
+        // if (varDecl) {
+        //     this->type = varDecl->GetType();
+        // }
+    } else {
+        // fprintf(stderr, "Symbol found: false\n");
+    }
 
     // v->dump();
     llvm::BasicBlock *bb = irgen.GetBasicBlock();
-    llvm::LoadInst *inst = new llvm::LoadInst(v, "", bb);
-
+    llvm::LoadInst *inst = new llvm::LoadInst(val, "", bb);
+    // fprintf(stderr, "VarExpr LoadInst\n");
     return inst;
 }
 
@@ -205,6 +210,7 @@ llvm::Value* ArithmeticExpr::getValue(){
     llvm::Value *leftOp;
     llvm::Value *rightOp;
 
+    // Check if unary to set value to a constant for decrement/increment
     if(left){
         leftOp = left->getValue();
         rightOp = right->getValue();
@@ -214,14 +220,13 @@ llvm::Value* ArithmeticExpr::getValue(){
         leftOp = right->getValue();
     }
 
-
-
     bool isFloat = leftOp->getType()->isFloatTy();
 
     llvm::BinaryOperator::BinaryOps binOp = toBinaryOps(isFloat, op);
 
     llvm::Value *retVal = llvm::BinaryOperator::Create(binOp, leftOp, rightOp, "", irgen.GetBasicBlock());
 
+    // Check if unary to determine if we should performa volatile store
     if(left){
         return retVal;
     } else {
