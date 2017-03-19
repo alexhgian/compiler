@@ -44,6 +44,7 @@ class IRGenerator {
     llvm::Type *getType(Type *type);
     llvm::BasicBlock *createFunctionBlock(const char* name);
     void setTerminator(llvm::BasicBlock *termBB);
+    void branchConditionally(llvm::BasicBlock *success, llvm::BasicBlock *fail, llvm::Value* test);
   private:
     llvm::LLVMContext *context;
     llvm::Module      *module;

@@ -142,10 +142,10 @@ void IfStmt::Emit(){
     if (elseBody) {
         elseBB = irgen.createFunctionBlock("ElseBB");
         footerBB = irgen.createFunctionBlock("footerBB");
-        llvm::Value* br = llvm::BranchInst::Create(thenBB, elseBB, test->getValue(), irgen.GetBasicBlock());
+        irgen.branchConditionally(thenBB, elseBB, test->getValue());
     } else {
         footerBB = irgen.createFunctionBlock("footerBB");
-        llvm::Value* br = llvm::BranchInst::Create(thenBB, footerBB, test->getValue(), irgen.GetBasicBlock());
+        irgen.branchConditionally(thenBB, footerBB, test->getValue());
     }
 
     //===== thenBB begin ======

@@ -13,7 +13,7 @@ next:                                             ; preds = %entry
   store i32 2, i32* %y
   %0 = load i32* %x
   %1 = load i32* %y
-  %2 = icmp sge i32 %0, %1
+  %2 = icmp eq i32 %0, %1
   br i1 %2, label %ThenBB, label %ElseBB
 
 ThenBB:                                           ; preds = %next
