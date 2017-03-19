@@ -127,6 +127,55 @@ void IfStmt::PrintChildren(int indentLevel) {
     if (elseBody) elseBody->Print(indentLevel+1, "(else) ");
 }
 
+void IfStmt::Emit(){
+    fprintf(stderr, "IfStmt::Emit\n");
+    SymbolTable &symtab = SymbolTable::getInstance();
+    IRGenerator &irgen = IRGenerator::getInstance();
+
+    llvm::BasicBlock *thenBB = irgen.createFunctionBlock("ThenBB");
+
+    llvm::BasicBlock *footerBB = NULL; // Cannot create footerBB yet otherwise
+                                       // it might be out of order if elseBody exists
+    llvm::BasicBlock *elseBB = NULL;
+
+    // create elseBB if elseBody exists
+    if (elseBody) {
+        elseBB = irgen.createFunctionBlock("ElseBB");
+        footerBB = irgen.createFunctionBlock("footerBB");
+        llvm::Value* br = llvm::BranchInst::Create(thenBB, elseBB, test->getValue(), irgen.GetBasicBlock());
+    } else {
+        footerBB = irgen.createFunctionBlock("footerBB");
+        llvm::Value* br = llvm::BranchInst::Create(thenBB, footerBB, test->getValue(), irgen.GetBasicBlock());
+    }
+
+    //===== thenBB begin ======
+    irgen.SetBasicBlock(thenBB);
+
+    symtab.push();
+    body->Emit();
+    symtab.pop();
+
+    irgen.setTerminator(footerBB);
+    //===== thenBB end ======
+
+
+    //===== elseBB begin ======
+    if (elseBody) { // Check if elseBody exists
+        irgen.SetBasicBlock(elseBB);
+
+        symtab.push();
+        elseBody->Emit();
+        symtab.pop();
+
+        // terminate elseBB
+        irgen.setTerminator(footerBB);
+    }
+    //===== elseBB end ======
+
+
+    // set footerBB to exit
+    irgen.SetBasicBlock(footerBB);
+}
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
     expr = e;

@@ -173,6 +173,7 @@ class EqualityExpr : public CompoundExpr
     EqualityExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "EqualityExpr"; }
     llvm::Value* getValue();
+    void Emit();
 };
 
 class LogicalExpr : public CompoundExpr

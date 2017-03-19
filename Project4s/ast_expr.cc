@@ -232,6 +232,34 @@ llvm::CmpInst::Predicate getEqualityOP(bool isFloat, Operator *op){
     }
 }
 
+llvm::CmpInst::Predicate getRelationalOP(bool isFloat, Operator *op){
+    if (op->IsOp("<")) {
+        if (isFloat ){
+            return llvm::CmpInst::FCMP_OLT;
+        } else {
+            return llvm::CmpInst::ICMP_SLT;
+        }
+    } else if (op->IsOp("<=")) {
+        if (isFloat ){
+            return llvm::CmpInst::FCMP_OLE;
+        } else {
+            return llvm::CmpInst::ICMP_SLE;
+        }
+    } else if (op->IsOp(">")) {
+        if (isFloat ){
+            return llvm::CmpInst::FCMP_OGT;
+        } else {
+            return llvm::CmpInst::ICMP_SGT;
+        }
+    } else {
+        if (isFloat ){
+            return llvm::CmpInst::FCMP_OGE;
+        } else {
+            return llvm::CmpInst::ICMP_SGE;
+        }
+    }
+}
+
 void ArithmeticExpr::Emit(){
     fprintf(stderr, "ArithmeticExpr::Emit(): %s\n", op->toString());
     this->getValue();
@@ -366,6 +394,11 @@ llvm::Value* AssignExpr::getValue(){
     return assignValue;
 }
 
+void EqualityExpr::Emit(){
+    fprintf(stderr, "EqualityExpr::Emit()\n");
+    this->getValue();
+}
+
 llvm::Value* EqualityExpr::getValue(){
     fprintf(stderr, "EqualityExpr::getValue()\n");
     IRGenerator &irgen = IRGenerator::getInstance();
@@ -399,7 +432,19 @@ llvm::Value* LogicalExpr::getValue(){
 
 llvm::Value* RelationalExpr::getValue(){
     fprintf(stderr, "RelationalExpr::getValue()\n");
-    return NULL;
+    IRGenerator &irgen = IRGenerator::getInstance();
+    SymbolTable &symtab = SymbolTable::getInstance();
+
+    llvm::Value *lVal = left->getValue();
+    llvm::Value *rVal = right->getValue();
+
+    bool isFloat = lVal->getType()->isFloatTy() || lVal->getType()->isVectorTy();
+
+    llvm::CmpInst::Predicate preOp = getRelationalOP(isFloat, op);
+
+    llvm::Value *retVal = llvm::CmpInst::Create(getCmpOp(isFloat), preOp, lVal, rVal, "", irgen.GetBasicBlock());
+
+    return retVal;
 }
 
 void FieldAccess::PrintChildren(int indentLevel) {
