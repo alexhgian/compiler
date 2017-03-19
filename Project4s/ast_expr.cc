@@ -530,3 +530,21 @@ void Call::PrintChildren(int indentLevel) {
    if (field) field->Print(indentLevel+1);
    if (actuals) actuals->PrintAll(indentLevel+1, "(actuals) ");
 }
+
+void Call::Emit(){
+    this->getValue();
+}
+
+llvm::Value* Call::getValue(){
+    std::vector<llvm::Value*> args;
+    IRGenerator &irgen = IRGenerator::getInstance();
+    SymbolTable &symtab = SymbolTable::getInstance();
+
+	for(int i = 0; i < actuals->NumElements(); i++) {
+		args.push_back(actuals->Nth(i)->getValue());
+	}
+
+    Symbol *sym = symtab.find(field->GetName());
+    llvm::BasicBlock *bb = irgen.GetBasicBlock();
+    return llvm::CallInst::Create(sym->value, args, "", bb);
+}

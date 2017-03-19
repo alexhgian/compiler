@@ -271,6 +271,8 @@ class Call : public Expr
     Call(yyltype loc, Expr *base, Identifier *field, List<Expr*> *args);
     const char *GetPrintNameForNode() { return "Call"; }
     void PrintChildren(int indentLevel);
+    llvm::Value* getValue();
+    void Emit();
 };
 
 class ActualsError : public Call
