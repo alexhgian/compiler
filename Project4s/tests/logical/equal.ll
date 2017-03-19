@@ -4,18 +4,24 @@ target triple = "x86_64-redhat-linux-gnu"
 
 define i32 @main() {
 entry:
+  %x = alloca i32
+  %y = alloca i32
   br label %next
 
 next:                                             ; preds = %entry
-  %0 = icmp eq i32 1, 1
-  br i1 %0, label %ThenBB, label %ElseBB
+  store i32 1, i32* %x
+  store i32 2, i32* %y
+  %0 = load i32* %x
+  %1 = load i32* %y
+  %2 = icmp sge i32 %0, %1
+  br i1 %2, label %ThenBB, label %ElseBB
 
 ThenBB:                                           ; preds = %next
   ret i32 1
 
 ElseBB:                                           ; preds = %next
-  br label %footerBB
+  ret i32 2
 
-footerBB:                                         ; preds = %ElseBB
+footerBB:                                         ; No predecessors!
   ret i32 0
 }
