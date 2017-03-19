@@ -54,7 +54,7 @@ class Type : public Node
     void PrintChildren(int indentLevel);
 
     virtual void PrintToStream(ostream& out) { out << typeName; }
-    const char * toString() { return typeName; }
+    virtual const char * toString() { return typeName; }
     friend ostream& operator<<(ostream& out, Type *t) { t->PrintToStream(out); return out; }
     virtual bool IsEquivalentTo(Type *other) { return (this == other); }
     virtual bool IsConvertibleTo(Type *other) { return (this == other || this == errorType); }
@@ -91,6 +91,8 @@ class ArrayType : public Type
     void PrintChildren(int indentLevel);
     void PrintToStream(ostream& out) { out << elemType << "[]"; }
     Type *GetElemType() {return elemType;}
+    int GetElemCount() {return elemCount;}
+    const char * toString() { return elemType->toString(); }
 };
 
 

@@ -119,6 +119,7 @@ class VarExpr : public Expr
     Identifier *GetIdentifier() {return id;}
     llvm::Value* getValue();
     llvm::Value* store(llvm::Value *rVal, bool isVolatile = false);
+    llvm::Value* getStoreValue();
 };
 
 class Operator : public Node
@@ -218,10 +219,6 @@ class LValue : public Expr
 {
   public:
     LValue(yyltype loc) : Expr(loc) {}
-     llvm::Value* getValue(){
-         fprintf(stderr, "LValue::getValue\n");
-         return NULL;
-     }
 };
 
 class ArrayAccess : public LValue
@@ -233,6 +230,10 @@ class ArrayAccess : public LValue
     ArrayAccess(yyltype loc, Expr *base, Expr *subscript);
     const char *GetPrintNameForNode() { return "ArrayAccess"; }
     void PrintChildren(int indentLevel);
+    void Emit();
+    llvm::Value* getValue();
+    void storeValue(llvm::Value* val);
+    llvm::GetElementPtrInst* getPtr();
 };
 
 /* Note that field access is used both for qualified names
@@ -251,6 +252,7 @@ class FieldAccess : public LValue
     const char *GetPrintNameForNode() { return "FieldAccess"; }
     void PrintChildren(int indentLevel);
     llvm::Value* getValue();
+    void Emit();
 };
 
 /* Like field access, call is used both for qualified base.field()

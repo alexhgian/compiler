@@ -49,13 +49,14 @@ void VarDecl::Emit(){
     llvm::Module *mod = irgen.GetOrCreateModule(NULL);
 
     Identifier *id = this->GetIdentifier();
-
+    // fprintf(stderr, "VarDecl GetType start\n");
     llvm::Type *vType = irgen.getType(this->GetType());
     llvm::Value *v = NULL;
+    // fprintf(stderr, "VarDecl GetType end\n");
 
     // Check if variable is global
     if(symtab.isGlobalScope()){
-        fprintf(stderr, "VarDecl (global) id->GetName(): %s\n", id->GetName());
+        // fprintf(stderr, "VarDecl (global) id->GetName(): %s\n", id->GetName());
         // v = new llvm::GlobalVariable(
         //     *irgen.GetOrCreateModule("foo.bc"),
         //     vType,

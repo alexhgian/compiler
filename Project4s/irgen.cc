@@ -79,20 +79,26 @@ llvm::Type *IRGenerator::getVoidType() const {
    return llvm::Type::getVoidTy(*context);
 }
 
+llvm::Type *IRGenerator::getArrayType(ArrayType* arrayType){
+    llvm::Type* elementType = getType( arrayType->GetElemType());
+    return llvm::ArrayType::get(elementType, arrayType->GetElemCount());
+}
+
 llvm::Type *IRGenerator::getType(Type *type){
+    // std::string tName = string(type->toString());
+    // fprintf(stderr, "getType %s\n", type->toString());
 
-
-    std::string tName = string(type->toString());
-
-    if(tName == "int"){
+    if(type == Type::intType){
         return getIntType();
-    } else if(tName == "bool"){
-        return  getBoolType();
-    } else if(tName == "float"){
+    } else if(type == Type::floatType){
         return getFloatType();
-    } else if(tName == "void"){
+    } else if(type == Type::boolType){
+        return  getBoolType();
+    } else if(type == Type::voidType){
         return getVoidType();
-    } else {
+    } else if( dynamic_cast<ArrayType*>(type) ) {
+        return getArrayType(dynamic_cast<ArrayType*>(type));
+	} else {
         return NULL;
     }
 

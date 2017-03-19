@@ -52,10 +52,20 @@ void VarExpr::PrintChildren(int indentLevel) {
 * Use LoadInst to load the value inside the current BasicBlock
 */
 llvm::Value* VarExpr::getValue(){
-    fprintf(stderr, "VarExpr:getValue\n");
-    SymbolTable &symtab = SymbolTable::getInstance();
+    // fprintf(stderr, "VarExpr:getValue\n");
+
     IRGenerator &irgen = IRGenerator::getInstance();
 
+    llvm::Value* val = this->getStoreValue();
+    // v->dump();
+
+    llvm::LoadInst *inst = new llvm::LoadInst(val, "",  irgen.GetBasicBlock());
+    // fprintf(stderr, "VarExpr LoadInst\n");
+    return inst;
+}
+
+llvm::Value* VarExpr::getStoreValue(){
+    SymbolTable &symtab = SymbolTable::getInstance();
     Symbol *sym = symtab.find(id->GetName());
     llvm::Value *val = NULL;
 
@@ -65,18 +75,8 @@ llvm::Value* VarExpr::getValue(){
         // fprintf(stderr, "Symbol found: true | %s\n", sym->name );
         val = sym->value;
         VarDecl* varDecl = dynamic_cast<VarDecl*>(sym->decl);
-        // if (varDecl) {
-        //     this->type = varDecl->GetType();
-        // }
-    } else {
-        // fprintf(stderr, "Symbol found: false\n");
     }
-
-    // v->dump();
-    llvm::BasicBlock *bb = irgen.GetBasicBlock();
-    llvm::LoadInst *inst = new llvm::LoadInst(val, "", bb);
-    // fprintf(stderr, "VarExpr LoadInst\n");
-    return inst;
+    return val;
 }
 
 llvm::Value *VarExpr::store(llvm::Value *rVal, bool isVolatile){
@@ -261,12 +261,12 @@ llvm::CmpInst::Predicate getRelationalOP(bool isFloat, Operator *op){
 }
 
 void ArithmeticExpr::Emit(){
-    fprintf(stderr, "ArithmeticExpr::Emit(): %s\n", op->toString());
+    // fprintf(stderr, "ArithmeticExpr::Emit(): %s\n", op->toString());
     this->getValue();
 }
 
 llvm::Value* ArithmeticExpr::getValue(){
-    fprintf(stderr, "ArithmeticExpr::getValue()\n");
+    // fprintf(stderr, "ArithmeticExpr::getValue()\n");
     IRGenerator &irgen = IRGenerator::getInstance();
 
     llvm::Value *leftOp;
@@ -307,13 +307,13 @@ llvm::Value* ArithmeticExpr::getValue(){
 * TODO: Handle swizzle
 */
 void PostfixExpr::Emit(){
-    fprintf(stderr, "PostfixExpr::Emit()\n");
+    // fprintf(stderr, "PostfixExpr::Emit()\n");
     // Return value before evaluating unary expression
     llvm::Value* assVal = this->getValue();
 }
 
 llvm::Value* PostfixExpr::getValue(){
-    fprintf(stderr, "PostfixExpr::getValue()\n");
+    // fprintf(stderr, "PostfixExpr::getValue()\n");
     IRGenerator &irgen = IRGenerator::getInstance();
 
     llvm::Value *orgVal = left->getValue();
@@ -336,12 +336,12 @@ llvm::Value* PostfixExpr::getValue(){
     return orgVal;
 }
 void AssignExpr::Emit(){
-    fprintf(stderr, "AssignExpr::Emit()\n");
+    // fprintf(stderr, "AssignExpr::Emit()\n");
     llvm::Value* assVal = this->getValue();
 }
 
 llvm::Value* AssignExpr::getValue(){
-    fprintf(stderr, "AssignExpr::getValue()\n");
+    // fprintf(stderr, "AssignExpr::getValue()\n");
     IRGenerator &irgen = IRGenerator::getInstance();
     SymbolTable &symtab = SymbolTable::getInstance();
 
@@ -382,25 +382,40 @@ llvm::Value* AssignExpr::getValue(){
         // Return rhs
         assignValue = rVal;
     } else { // Handle basic assignment case: z = x + y;
-        fprintf(stderr, "AssignExpr op is `=`\n");
+        // fprintf(stderr, "AssignExpr op is `=`\n");
         llvm::Value *rVal = right->getValue();
         assignValue = rVal;
     }
-    fprintf(stderr, "AssignExpr storing\n");
+
+    // fprintf(stderr, "AssignExpr storing\n");
     // Cast the lhs to a VarExpr and store rhs into lhs
-    VarExpr *leftVar = dynamic_cast<VarExpr*>(left);
-    leftVar->store(assignValue);
+    ArrayAccess* leftArray = dynamic_cast<ArrayAccess*>(left);
+    FieldAccess* leftField = dynamic_cast<FieldAccess*>(left);
+
+    if(leftArray){
+        // fprintf(stderr, "AssignExpr leftArray storing\n");
+        // call custom store method for arrays
+        // must be cased to ArrayAccess before use
+        leftArray->storeValue(assignValue);
+
+    } else if(leftField) {
+        // fprintf(stderr, "AssignExpr leftField storing\n");
+    } else {
+        // fprintf(stderr, "AssignExpr storing\n");
+        VarExpr *leftVar = dynamic_cast<VarExpr*>(left);
+        leftVar->store(assignValue);
+    }
 
     return assignValue;
 }
 
 void EqualityExpr::Emit(){
-    fprintf(stderr, "EqualityExpr::Emit()\n");
+    // fprintf(stderr, "EqualityExpr::Emit()\n");
     this->getValue();
 }
 
 llvm::Value* EqualityExpr::getValue(){
-    fprintf(stderr, "EqualityExpr::getValue()\n");
+    // fprintf(stderr, "EqualityExpr::getValue()\n");
     IRGenerator &irgen = IRGenerator::getInstance();
 
     llvm::Value *lVal = left->getValue();
@@ -418,7 +433,7 @@ llvm::Value* EqualityExpr::getValue(){
 }
 
 llvm::Value* LogicalExpr::getValue(){
-    fprintf(stderr, "LogicalExpr::getValue()\n");
+    // fprintf(stderr, "LogicalExpr::getValue()\n");
     IRGenerator &irgen = IRGenerator::getInstance();
     SymbolTable &symtab = SymbolTable::getInstance();
 
@@ -431,7 +446,7 @@ llvm::Value* LogicalExpr::getValue(){
 }
 
 llvm::Value* RelationalExpr::getValue(){
-    fprintf(stderr, "RelationalExpr::getValue()\n");
+    // fprintf(stderr, "RelationalExpr::getValue()\n");
     IRGenerator &irgen = IRGenerator::getInstance();
     SymbolTable &symtab = SymbolTable::getInstance();
 
@@ -452,8 +467,53 @@ void FieldAccess::PrintChildren(int indentLevel) {
     field->Print(indentLevel+1);
 }
 
+
+void ArrayAccess::Emit(){
+    // fprintf(stderr, "ArrayAccess::Emit()\n");
+    this->getValue();
+}
+
+llvm::GetElementPtrInst* ArrayAccess::getPtr(){
+    IRGenerator &irgen = IRGenerator::getInstance();
+
+    // fprintf(stderr, "ArrayAccess::getValue()\n");
+
+    VarExpr* baseVarExpr = dynamic_cast<VarExpr*>(base);
+    llvm::Value* baseVal = baseVarExpr->getStoreValue(); // get stored val w/o loading yet
+
+    llvm::Value* indexVal = subscript->getValue();
+
+    Expr * zeroExpr = new IntConstant(0);
+
+    vector<llvm::Value*> v;
+    v.push_back(zeroExpr->getValue());
+    v.push_back(indexVal);
+
+    llvm::ArrayRef<llvm::Value*> indexRef = llvm::ArrayRef<llvm::Value*>(v);
+
+    return llvm::GetElementPtrInst::Create(baseVal, indexRef, "", irgen.GetBasicBlock());;
+}
+
+llvm::Value* ArrayAccess::getValue(){
+    IRGenerator &irgen = IRGenerator::getInstance();
+    return new llvm::LoadInst(this->getPtr(), "", irgen.GetBasicBlock());
+}
+
+void ArrayAccess::storeValue(llvm::Value* val){
+    IRGenerator &irgen = IRGenerator::getInstance();
+    llvm::Value* ptr = this->getPtr();
+    llvm::StoreInst* stored = new llvm::StoreInst(val, ptr, "", irgen.GetBasicBlock());
+    stored->setVolatile(false);
+}
+
+void FieldAccess::Emit(){
+    fprintf(stderr, "FieldAccess::getValue()\n");
+    this->getValue();
+}
 llvm::Value* FieldAccess::getValue(){
     fprintf(stderr, "FieldAccess::getValue()\n");
+    IRGenerator &irgen = IRGenerator::getInstance();
+    SymbolTable &symtab = SymbolTable::getInstance();
     return NULL;
 }
 

@@ -55,7 +55,7 @@ void StmtBlock::Emit() {
 
 
   // Enter block scope
-  // symTable.push();
+  symTable.push();
 
   for (int i = 0; i < stmts->NumElements(); i++) {
        if (irgen.GetBasicBlock()->getTerminator()){ break; }
@@ -66,7 +66,7 @@ void StmtBlock::Emit() {
   }
 
   // Leave block scope
-  // symTable.pop();
+  symTable.pop();
 }
 
 void StmtBlock::PrintChildren(int indentLevel) {
@@ -128,15 +128,18 @@ void IfStmt::PrintChildren(int indentLevel) {
 }
 
 void IfStmt::Emit(){
-    fprintf(stderr, "IfStmt::Emit\n");
+    // fprintf(stderr, "IfStmt::Emit\n");
     SymbolTable &symtab = SymbolTable::getInstance();
     IRGenerator &irgen = IRGenerator::getInstance();
 
+    // create the then BasicBlock first
     llvm::BasicBlock *thenBB = irgen.createFunctionBlock("ThenBB");
 
-    llvm::BasicBlock *footerBB = NULL; // Cannot create footerBB yet otherwise
-                                       // it might be out of order if elseBody exists
+    // create only if elseBody exists
     llvm::BasicBlock *elseBB = NULL;
+
+    // create this after the rest because order matters
+    llvm::BasicBlock *footerBB = NULL;
 
     // create elseBB if elseBody exists
     if (elseBody) {
@@ -151,9 +154,9 @@ void IfStmt::Emit(){
     //===== thenBB begin ======
     irgen.SetBasicBlock(thenBB);
 
-    symtab.push();
+    symtab.push(); // create then scope
     body->Emit();
-    symtab.pop();
+    symtab.pop(); // exist then scope
 
     irgen.setTerminator(footerBB);
     //===== thenBB end ======
@@ -163,9 +166,9 @@ void IfStmt::Emit(){
     if (elseBody) { // Check if elseBody exists
         irgen.SetBasicBlock(elseBB);
 
-        symtab.push();
+        symtab.push(); // create else scope
         elseBody->Emit();
-        symtab.pop();
+        symtab.pop(); // exist else scope
 
         // terminate elseBB
         irgen.setTerminator(footerBB);

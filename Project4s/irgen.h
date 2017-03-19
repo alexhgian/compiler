@@ -39,7 +39,8 @@ class IRGenerator {
     llvm::Type *getBoolType() const;
     llvm::Type *getFloatType() const;
     llvm::Type *getVoidType() const;
-
+    llvm::Type *getArrayType(ArrayType* arrayType);
+    
     // new declarations
     llvm::Type *getType(Type *type);
     llvm::BasicBlock *createFunctionBlock(const char* name);
