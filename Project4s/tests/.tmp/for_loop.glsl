@@ -1,12 +1,13 @@
+vec2 v;
 
-
-float fortest()
+float fortest(int a)
 {
   int i;
-  int sum;
-  for ( i = 0; i < 10; i += 1 )
-    int y;
-    sum += 1;
+  float sum;
+
+  sum = v.x;
+  for ( i = 0; i < a; i += 1 )
+    sum *= v.y;
 
   return sum;
 }
