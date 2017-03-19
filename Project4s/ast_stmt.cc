@@ -132,22 +132,19 @@ void IfStmt::Emit(){
     SymbolTable &symtab = SymbolTable::getInstance();
     IRGenerator &irgen = IRGenerator::getInstance();
 
-    // create the then BasicBlock first
-    llvm::BasicBlock *thenBB = irgen.createFunctionBlock("ThenBB");
 
-    // create only if elseBody exists
+    llvm::BasicBlock *footerBB = irgen.createFunctionBlock("footerBB");
+
     llvm::BasicBlock *elseBB = NULL;
 
-    // create this after the rest because order matters
-    llvm::BasicBlock *footerBB = NULL;
+    if (elseBody) { elseBB = irgen.createFunctionBlock("ElseBB"); }
+
+    llvm::BasicBlock *thenBB = irgen.createFunctionBlock("ThenBB");
 
     // create elseBB if elseBody exists
     if (elseBody) {
-        elseBB = irgen.createFunctionBlock("ElseBB");
-        footerBB = irgen.createFunctionBlock("footerBB");
         irgen.branchConditionally(thenBB, elseBB, test->getValue());
     } else {
-        footerBB = irgen.createFunctionBlock("footerBB");
         irgen.branchConditionally(thenBB, footerBB, test->getValue());
     }
 
@@ -164,6 +161,8 @@ void IfStmt::Emit(){
 
     //===== elseBB begin ======
     if (elseBody) { // Check if elseBody exists
+        elseBB->moveAfter(irgen.GetBasicBlock());
+        
         irgen.SetBasicBlock(elseBB);
 
         symtab.push(); // create else scope
@@ -175,6 +174,7 @@ void IfStmt::Emit(){
     }
     //===== elseBB end ======
 
+    footerBB->moveAfter(irgen.GetBasicBlock
 
     // set footerBB to exit
     irgen.SetBasicBlock(footerBB);

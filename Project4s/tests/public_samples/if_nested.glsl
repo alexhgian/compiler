@@ -1,17 +1,13 @@
-
-vec2 v;
-
 float ifnested(float arg)
 {
    float f;
    if ( arg > 1.0 ) {
-      if ( v.x < 0.5 ) 
-         f = v.x;
+      if ( 1.0 < 0.5 )
+         f = 1.0;
       else
-         f= v.y;
+         f = 2.0;
    } else {
       f = arg;
-   } 
+   }
    return f;
 }
-
