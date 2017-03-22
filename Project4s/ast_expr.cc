@@ -260,6 +260,22 @@ llvm::CmpInst::Predicate getRelationalOP(bool isFloat, Operator *op){
     }
 }
 
+llvm::Constant* selectConstant(llvm::Value* opSelect){
+    IRGenerator &irgen = IRGenerator::getInstance();
+    if(opSelect->getType()->isFloatTy()){
+        return llvm::ConstantFP::get(
+            irgen.getFloatType(),
+            1.0
+        );
+    } else {
+        return llvm::ConstantInt::get(
+            irgen.getIntType(),
+            1,
+            true
+        );
+    }
+}
+
 void ArithmeticExpr::Emit(){
     // fprintf(stderr, "ArithmeticExpr::Emit(): %s\n", op->toString());
     this->getValue();
@@ -277,9 +293,8 @@ llvm::Value* ArithmeticExpr::getValue(){
         leftOp = left->getValue();
         rightOp = right->getValue();
     } else {
-        Expr *one = new IntConstant(1);
-        rightOp = one->getValue();
         leftOp = right->getValue();
+        rightOp = selectConstant(leftOp);
     }
 
     bool isFloat = leftOp->getType()->isFloatTy();
@@ -321,8 +336,7 @@ llvm::Value* PostfixExpr::getValue(){
     llvm::Value *leftOp;
     llvm::Value *rightOp;
 
-    Expr *one = new IntConstant(1);
-    rightOp = one->getValue();
+    rightOp = selectConstant(orgVal);
     leftOp = orgVal;
 
     // Check if it is float
@@ -348,7 +362,7 @@ llvm::Value* AssignExpr::getValue(){
     llvm::Value *assignValue;
 
     if (op->IsOp("+=")){ // Handle basic assignment case: z += 2
-        // fprintf(stderr, "AssignExpr op is `+=`\n");
+        fprintf(stderr, "AssignExpr op is `+=`\n");
         // Create a new ArithmeticExpr to handle addition of the left variable expr with the right expr
         // Using custom Operator to perform addition operation
         // ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs)
