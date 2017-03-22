@@ -56,6 +56,13 @@ class IntConstant : public Expr
     int value;
 
   public:
+    static llvm::Constant* toLLVMConstant(int val){
+        return llvm::ConstantInt::get(
+            IRGenerator::getInstance().getIntType(),
+            val,
+            true
+        );
+    }
     IntConstant(yyltype loc, int val);
     IntConstant(int val);
     const char *GetPrintNameForNode() { return "IntConstant"; }
@@ -219,6 +226,7 @@ class LValue : public Expr
 {
   public:
     LValue(yyltype loc) : Expr(loc) {}
+    // virtual void storeValue(llvm::Value* val);
 };
 
 class ArrayAccess : public LValue
@@ -253,6 +261,7 @@ class FieldAccess : public LValue
     void PrintChildren(int indentLevel);
     llvm::Value* getValue();
     void Emit();
+    void storeValue(llvm::Value* val);
 };
 
 /* Like field access, call is used both for qualified base.field()

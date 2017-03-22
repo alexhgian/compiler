@@ -40,6 +40,9 @@ class IRGenerator {
     llvm::Type *getFloatType() const;
     llvm::Type *getVoidType() const;
     llvm::Type *getArrayType(ArrayType* arrayType);
+    llvm::Type *getVec2Type() const;
+    llvm::Type *getVec3Type() const;
+    llvm::Type *getVec4Type() const;
     
     // new declarations
     llvm::Type *getType(Type *type);

@@ -79,6 +79,16 @@ llvm::Type *IRGenerator::getVoidType() const {
    return llvm::Type::getVoidTy(*context);
 }
 
+llvm::Type *IRGenerator::getVec2Type() const {
+  return llvm::VectorType::get(getFloatType(), 2);
+}
+llvm::Type *IRGenerator::getVec3Type() const {
+  return llvm::VectorType::get(getFloatType(), 3);
+}
+llvm::Type *IRGenerator::getVec4Type() const {
+  return llvm::VectorType::get(getFloatType(), 4);
+}
+
 llvm::Type *IRGenerator::getArrayType(ArrayType* arrayType){
     llvm::Type* elementType = getType( arrayType->GetElemType());
     return llvm::ArrayType::get(elementType, arrayType->GetElemCount());
@@ -96,7 +106,13 @@ llvm::Type *IRGenerator::getType(Type *type){
         return  getBoolType();
     } else if(type == Type::voidType){
         return getVoidType();
-    } else if( dynamic_cast<ArrayType*>(type) ) {
+    } else if(type == Type::vec2Type){
+        return getVec2Type();
+    } else if(type == Type::vec3Type){
+        return getVec3Type();
+    } else if(type == Type::vec4Type){
+        return getVec3Type();
+    }else if( dynamic_cast<ArrayType*>(type) ) {
         return getArrayType(dynamic_cast<ArrayType*>(type));
 	} else {
         return NULL;

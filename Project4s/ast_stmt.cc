@@ -162,7 +162,7 @@ void IfStmt::Emit(){
     //===== elseBB begin ======
     if (elseBody) { // Check if elseBody exists
         elseBB->moveAfter(irgen.GetBasicBlock());
-        
+
         irgen.SetBasicBlock(elseBB);
 
         symtab.push(); // create else scope
@@ -174,7 +174,7 @@ void IfStmt::Emit(){
     }
     //===== elseBB end ======
 
-    footerBB->moveAfter(irgen.GetBasicBlock
+    footerBB->moveAfter(irgen.GetBasicBlock());
 
     // set footerBB to exit
     irgen.SetBasicBlock(footerBB);
