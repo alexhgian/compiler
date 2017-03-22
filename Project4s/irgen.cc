@@ -111,7 +111,7 @@ llvm::Type *IRGenerator::getType(Type *type){
     } else if(type == Type::vec3Type){
         return getVec3Type();
     } else if(type == Type::vec4Type){
-        return getVec3Type();
+        return getVec4Type();
     }else if( dynamic_cast<ArrayType*>(type) ) {
         return getArrayType(dynamic_cast<ArrayType*>(type));
 	} else {

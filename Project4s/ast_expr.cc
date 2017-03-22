@@ -553,7 +553,7 @@ void FieldAccess::Emit(){
 // }
 
 llvm::Value* FieldAccess::getValue(){
-    fprintf(stderr, "FieldAccess::getValue()\n");
+    fprintf(stderr, "FieldAccess::getValue() begin\n");
     IRGenerator &irgen = IRGenerator::getInstance();
     SymbolTable &symtab = SymbolTable::getInstance();
 
@@ -564,7 +564,7 @@ llvm::Value* FieldAccess::getValue(){
 
     std::vector<llvm::Constant*> idx;
     for(int i = 0; i < swizzle.length(); i++) {
-        fprintf(stderr, "FieldAccess::swizzle[%d] %c\n", i, swizzle[i]);
+        fprintf(stderr, "FieldAccess::getValue() swizzle[%d] %c\n", i, swizzle[i]);
         idx.push_back(getSwizzleIndex(swizzle[i]));
     }
     // fprintf(stderr, "FieldAccess::swizzle %s %d\n",swizzle, std::strlen(swizzle));
@@ -573,25 +573,26 @@ llvm::Value* FieldAccess::getValue(){
     //
 
     if(swizzle.length() == 1) {
+        fprintf(stderr, "FieldAccess::getValue()  ExtractElementInst\n");
         return llvm::ExtractElementInst::Create(loadedVec, getSwizzleIndex(swizzle[0]), "", irgen.GetBasicBlock());
     } else {
-
+        fprintf(stderr, "FieldAccess::getValue()  ShuffleVectorInst\n");
+        llvm::Value *maskVal = llvm::ConstantVector::get(idx);
+        llvm::Value *emptyVector = llvm::UndefValue::get(loadedVec->getType());
+        return new llvm::ShuffleVectorInst(loadedVec, loadedVec, maskVal, "", irgen.GetBasicBlock());
     }
 
     return NULL;
 }
 
 void FieldAccess::storeValue(llvm::Value* val){
-    fprintf(stderr, "FieldAccess::storeValue()\n");
+    fprintf(stderr, "FieldAccess::storeValue() begin\n");
     IRGenerator &irgen = IRGenerator::getInstance();
 
     VarExpr* vecExpr = dynamic_cast<VarExpr*>(base);
     llvm::Value* loadedVec = base->getValue();
 
     string swizzle = string(field->GetName());
-    for(int i = 0; i < swizzle.length(); i++) {
-        fprintf(stderr, "FieldAccess::swizzle[%d] %c\n", i, swizzle[i]);
-    }
 
     if(swizzle.length() == 1) {
         llvm::Value *ptr = llvm::InsertElementInst::Create(loadedVec, val, getSwizzleIndex(swizzle[0]), "", irgen.GetBasicBlock());
@@ -599,16 +600,18 @@ void FieldAccess::storeValue(llvm::Value* val){
         // stored->setVolatile(true);
         vecExpr->store(ptr, true);
     } else {
+        // Handles partials
+        llvm::Value *ptr = NULL;
+        ptr = loadedVec;
+        fprintf(stderr, "FieldAccess::storeValue() swizzle.length() > 1\n");
+        for(int i = 0; i < swizzle.length(); i++) {
+            fprintf(stderr, "FieldAccess::storeValue() swizzle[%d] %c\n", i, swizzle[i]);
+            llvm::Value* extractVal = llvm::ExtractElementInst::Create(val, getSwizzleIndex(swizzle[i]), "", irgen.GetBasicBlock());
+            ptr = llvm::InsertElementInst::Create(ptr, extractVal, getSwizzleIndex(swizzle[i]), "", irgen.GetBasicBlock());
 
+        }
+        vecExpr->store(ptr, true);
     }
-
-    // Expr* indexExpr = new IntConstant(1);
-    // llvm::Value *index = indexExpr->getValue();
-    // return llvm::InsertElementInst::Create(vec, elem, index, "", GetBasicBlock());
-    // llvm::Value* ptr = this->getPtr();
-    // llvm::StoreInst* stored = new llvm::StoreInst(val, ptr, "", irgen.GetBasicBlock());
-    // stored->setVolatile(false);
-
 }
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
