@@ -110,6 +110,50 @@ void ForStmt::PrintChildren(int indentLevel) {
     body->Print(indentLevel+1, "(body) ");
 }
 
+void ForStmt::Emit(){
+    IRGenerator &irgen = IRGenerator::getInstance();
+    SymbolTable &symtab = SymbolTable::getInstance();
+
+    llvm::BasicBlock *headerBB = irgen.createFunctionBlock("headerBB");
+    llvm::BasicBlock *bodyBB = irgen.createFunctionBlock("bodyBB");
+    llvm::BasicBlock *stepBB = irgen.createFunctionBlock("stepBB");
+    llvm::BasicBlock *footerBB = irgen.createFunctionBlock("footerBB");
+
+
+    // next
+    init->Emit();
+    llvm::BranchInst::Create(headerBB, irgen.GetBasicBlock());
+
+
+    // Body
+    // 1) Emit vars loop header
+    // 2) test
+    // 3) Branch
+    // llvm::BranchInst::Create(bodyBB, headerBB);
+
+    // headerBB - test
+    irgen.SetBasicBlock(headerBB);
+    irgen.branchConditionally(bodyBB, footerBB, test->getValue());
+
+    // // bodyBB - handle stmts
+    irgen.SetBasicBlock(bodyBB);
+    symtab.push();
+    body->Emit();
+    symtab.pop();
+    irgen.setTerminator(stepBB);
+
+    // stepBB
+    stepBB->moveAfter(irgen.GetBasicBlock());
+    irgen.SetBasicBlock(stepBB);
+    step->Emit();
+    irgen.setTerminator(headerBB);
+
+    // Footer
+    footerBB->moveAfter(irgen.GetBasicBlock());
+    irgen.SetBasicBlock(footerBB);
+
+}
+
 void WhileStmt::PrintChildren(int indentLevel) {
     test->Print(indentLevel+1, "(test) ");
     body->Print(indentLevel+1, "(body) ");

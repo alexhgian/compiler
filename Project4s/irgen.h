@@ -43,12 +43,16 @@ class IRGenerator {
     llvm::Type *getVec2Type() const;
     llvm::Type *getVec3Type() const;
     llvm::Type *getVec4Type() const;
-    
+
     // new declarations
     llvm::Type *getType(Type *type);
     llvm::BasicBlock *createFunctionBlock(const char* name);
     void setTerminator(llvm::BasicBlock *termBB);
     void branchConditionally(llvm::BasicBlock *success, llvm::BasicBlock *fail, llvm::Value* test);
+    void pushLoop(llvm::BasicBlock* bb);
+    void popLoop();
+    llvm::BasicBlock* getCurrentLoop();
+    // llvm::BasicBlock* getLoopTop();
   private:
     llvm::LLVMContext *context;
     llvm::Module      *module;
@@ -59,6 +63,9 @@ class IRGenerator {
 
     static const char *TargetTriple;
     static const char *TargetLayout;
+
+    std::vector<llvm::BasicBlock*> loopStack;
+    std::vector<llvm::BasicBlock*> breakStack;
 };
 
 #endif
