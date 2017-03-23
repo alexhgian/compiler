@@ -55,6 +55,8 @@ class IRGenerator {
     llvm::BasicBlock* getCurrentBreak();
     void createBreak();
     void createContinue();
+    void pushBreak(llvm::BasicBlock *bb);
+    void popBreak();
     // llvm::BasicBlock* getLoopTop();
   private:
     llvm::LLVMContext *context;

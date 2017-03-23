@@ -205,6 +205,7 @@ class SwitchStmt : public Stmt
     SwitchStmt(Expr *expr, List<Stmt*> *cases, Default *def);
     virtual const char *GetPrintNameForNode() { return "SwitchStmt"; }
     void PrintChildren(int indentLevel);
+    void Emit();
 
 };
 

@@ -323,6 +323,27 @@ void SwitchStmt::PrintChildren(int indentLevel) {
     if (def) def->Print(indentLevel+1);
 }
 
+void SwitchStmt::Emit(){
+    SymbolTable &symtab = SymbolTable::getInstance();
+    IRGenerator &irgen = IRGenerator::getInstance();
+
+    llvm::BasicBlock *exitBB = irgen.createFunctionBlock("switchExit");
+    llvm::BasicBlock *defaultBB = irgen.createFunctionBlock("switchDef");
+
+    irgen.pushBreak(exitBB);
+
+    int caseCount = 0;
+
+    for (int i = 0; i < cases->NumElements(); i++) {
+      if (dynamic_cast<Case*>(cases->Nth(i)))
+        caseCount++;
+    }
+
+    llvm::SwitchInst *switchInst = llvm::SwitchInst::Create(expr->getValue(), defaultBB, caseCount, irgen.GetBasicBlock());
+    
+    irgen.popBreak();
+}
+
 
 void BreakStmt::Emit() {
   IRGenerator &irgen = IRGenerator::getInstance();
