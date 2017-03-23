@@ -1,3 +1,0 @@
-funct: unary
-param: float, 1.5
-gin: a, vec2, 2.0, 3.0
