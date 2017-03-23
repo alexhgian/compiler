@@ -148,14 +148,17 @@ void ForStmt::Emit(){
     irgen.SetBasicBlock(stepBB);
     step->Emit();
     irgen.setTerminator(headerBB);
+    // llvm::BranchInst::Create(stepBB, headerBB);
 
-    // Footer
+    // // Footer
     // if (!irgen.GetBasicBlock()->getTerminator())
-    //   (void) llvm::BranchInst::Create(bodyBlock, endBlock);
-    //
+    //   (void) llvm::BranchInst::Create(stepBB, footerBB);
+
+
 
     footerBB->moveAfter(irgen.GetBasicBlock());
     irgen.SetBasicBlock(footerBB);
+
     irgen.popLoop();
 
 }
@@ -163,6 +166,35 @@ void ForStmt::Emit(){
 void WhileStmt::PrintChildren(int indentLevel) {
     test->Print(indentLevel+1, "(test) ");
     body->Print(indentLevel+1, "(body) ");
+}
+void WhileStmt::Emit(){
+    SymbolTable &symtab = SymbolTable::getInstance();
+    IRGenerator &irgen = IRGenerator::getInstance();
+    llvm::BasicBlock *headerBB = irgen.createFunctionBlock("headerBB");
+    llvm::BasicBlock *bodyBB = irgen.createFunctionBlock("bodyBB");
+    llvm::BasicBlock *footerBB = irgen.createFunctionBlock("footerBB");
+
+
+
+    irgen.pushLoop(headerBB, footerBB);
+    llvm::BranchInst::Create(headerBB, irgen.GetBasicBlock());
+
+    irgen.SetBasicBlock(headerBB);
+    irgen.branchConditionally(bodyBB, footerBB, test->getValue());
+
+    irgen.SetBasicBlock(bodyBB);
+    symtab.push();
+    body->Emit();
+    symtab.pop();
+    llvm::BranchInst::Create(headerBB, irgen.GetBasicBlock());
+
+    irgen.popLoop();
+
+    footerBB->moveAfter(irgen.GetBasicBlock());
+    irgen.SetBasicBlock(footerBB);
+
+
+
 }
 
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {

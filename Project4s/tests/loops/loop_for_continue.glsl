@@ -6,6 +6,9 @@ int main()
     int i;
     for(i=0; i < 5; i++){
         sum++;
+        if(i>1){
+            continue;
+        } 
     }
     return sum;
 }
