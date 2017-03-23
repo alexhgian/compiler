@@ -1,0 +1,43 @@
+Alex Gian		A11544343	agian@ucsd.edu
+Nazior Rahman 	A11456525	mnrahman@ucsd.edu
+
+Project Description:
+
+Implementation Strategies:
+Our coding strategy for this assignment was very similar to the last assignment
+ we’ve done. For this particular assignment, we started off with recognizing
+ “moduleID” of function, then progressing to the emit() function of vardecl,
+ declStmt, AssignmentExpr and others.
+This time we decided to implement ast_decl.cc first to provide us with all the
+declaration cases so we can implement features for ast_expr. We also had to build
+a better symtable as our previous symtable was very minimal and basic. This
+allowed us to declare vars properly. For ast_expr we decided to use another
+polymorphic function called getValue() to return the llvm::Value* as the
+polymorphic Emit() function was meant to be a void function. This worked out
+nicely as exprs in general return a value which is used in a larger expression
+which Emit propagates as the initial caller. We also made custom load and store
+functions that made store into something like a VarExpr easy. Where you would
+simply called VarExpr::store(assignVal) where assignVal is the value you want
+to store in that variable which made it more intuitive. This also worked for
+storing vals in Arrays and Vectors as well. We spent the most time in expr and
+we’re confident we’ve implemented all or close to all the features for expr.
+Then we spent whatever time we had left implementing if stmt, for loop, while
+loop, and attempted to finish Switch Stmt it seems to work but we have not full tested it.
+ We were able to complete everything
+except continuation for the loops.
+
+Testing Strategies:
+Apart from relying upon the sample cases we were provided, we have written a LOT
+of cases by ourselves to ensure the robustness of our program. One of the ways we
+did that was simplifying each implementation. For instance, before testing all
+the unary operators altogether, we tested each of them separately. We had sample
+cases just for “+”, “-”, and other operators to make sure they work before even
+before handling any complex computations.
+We created a script based of off a student’s python script but automated it to
+recurse directories and tests each folder containing its respective tests. This
+way we can test each feature as we build it where development is driven by tests.
+
+Although we finished more than 95% of the implementations, but this assignment
+was hard. I mean really hard! And we had very limited resources to get help from.
+The extra time was helpful where we were able to complete expr and almost complete
+stmts it was still a challenge till the very end.
