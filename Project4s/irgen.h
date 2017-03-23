@@ -49,9 +49,12 @@ class IRGenerator {
     llvm::BasicBlock *createFunctionBlock(const char* name);
     void setTerminator(llvm::BasicBlock *termBB);
     void branchConditionally(llvm::BasicBlock *success, llvm::BasicBlock *fail, llvm::Value* test);
-    void pushLoop(llvm::BasicBlock* bb);
+    void pushLoop(llvm::BasicBlock* body, llvm::BasicBlock* footer);
     void popLoop();
     llvm::BasicBlock* getCurrentLoop();
+    llvm::BasicBlock* getCurrentBreak();
+    void createBreak();
+    void createContinue();
     // llvm::BasicBlock* getLoopTop();
   private:
     llvm::LLVMContext *context;

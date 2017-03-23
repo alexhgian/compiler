@@ -119,6 +119,7 @@ void ForStmt::Emit(){
     llvm::BasicBlock *stepBB = irgen.createFunctionBlock("stepBB");
     llvm::BasicBlock *footerBB = irgen.createFunctionBlock("footerBB");
 
+    irgen.pushLoop(headerBB, footerBB);
 
     // next
     init->Emit();
@@ -149,8 +150,13 @@ void ForStmt::Emit(){
     irgen.setTerminator(headerBB);
 
     // Footer
+    // if (!irgen.GetBasicBlock()->getTerminator())
+    //   (void) llvm::BranchInst::Create(bodyBlock, endBlock);
+    //
+
     footerBB->moveAfter(irgen.GetBasicBlock());
     irgen.SetBasicBlock(footerBB);
+    irgen.popLoop();
 
 }
 
@@ -283,4 +289,15 @@ void SwitchStmt::PrintChildren(int indentLevel) {
     if (expr) expr->Print(indentLevel+1);
     if (cases) cases->PrintAll(indentLevel+1);
     if (def) def->Print(indentLevel+1);
+}
+
+
+void BreakStmt::Emit() {
+  IRGenerator &irgen = IRGenerator::getInstance();
+  irgen.createBreak();
+}
+
+void ContinueStmt::Emit() {
+  IRGenerator &irgen = IRGenerator::getInstance();
+  irgen.createContinue();
 }

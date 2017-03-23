@@ -27,9 +27,9 @@ bodyBB:                                           ; preds = %headerBB
   br i1 %5, label %ThenBB, label %footerBB1
 
 ThenBB:                                           ; preds = %bodyBB
-  br label %footerBB1
+  br label %footerBB
 
-footerBB1:                                        ; preds = %ThenBB, %bodyBB
+footerBB1:                                        ; preds = %bodyBB
   br label %stepBB
 
 stepBB:                                           ; preds = %footerBB1
@@ -38,7 +38,7 @@ stepBB:                                           ; preds = %footerBB1
   store volatile i32 %7, i32* %i
   br label %headerBB
 
-footerBB:                                         ; preds = %headerBB
+footerBB:                                         ; preds = %ThenBB, %headerBB
   %8 = load i32* %sum
   ret i32 %8
 }

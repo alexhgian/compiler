@@ -133,21 +133,32 @@ void IRGenerator::branchConditionally(llvm::BasicBlock *success, llvm::BasicBloc
     llvm::Value* br = llvm::BranchInst::Create(success, fail, test, irgen.GetBasicBlock());
 }
 
-void IRGenerator::pushLoop(llvm::BasicBlock* bb) {
-    loopStack.push_back(bb);
+void IRGenerator::pushLoop(llvm::BasicBlock* body, llvm::BasicBlock* footer) {
+    loopStack.push_back(body);
+    breakStack.push_back(footer);
 }
 
 void IRGenerator::popLoop() {
     loopStack.pop_back();
+    breakStack.pop_back();
 }
 
 llvm::BasicBlock* IRGenerator::getCurrentLoop(){
     return loopStack.back();
 }
+llvm::BasicBlock* IRGenerator::getCurrentBreak(){
+    return breakStack.back();
+}
 
-// llvm::BasicBlock* IRGenerator::getLoopTop(){
-//     return loopStack.top();
-// }
+void IRGenerator::createBreak(){
+    IRGenerator &irgen = IRGenerator::getInstance();
+    llvm::BranchInst::Create(breakStack.back(), irgen.GetBasicBlock());
+}
+
+void IRGenerator::createContinue(){
+    IRGenerator &irgen = IRGenerator::getInstance();
+    llvm::BranchInst::Create(breakStack.back(), irgen.GetBasicBlock());
+}
 
 const char *IRGenerator::TargetLayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128";
 
