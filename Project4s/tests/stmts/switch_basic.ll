@@ -11,6 +11,26 @@ entry:
 next:                                             ; preds = %entry
   store float 0.000000e+00, float* %f
   store i32 1, i32* %a
-  %0 = load float* %f
-  ret float %0
+  %0 = load i32* %a
+  switch i32 %0, label %switchDef [
+    i32 0, label %switchCase0
+    i32 1, label %switchCase1
+    i32 2, label %switchCase2
+  ]
+
+switchCase0:                                      ; preds = %next
+  br label %switchCase1
+
+switchCase1:                                      ; preds = %switchCase0, %next
+  br label %switchCase2
+
+switchCase2:                                      ; preds = %switchCase1, %next
+  br label %switchDef
+
+switchDef:                                        ; preds = %switchCase2, %next
+  br label %switchExit
+
+switchExit:                                       ; preds = %switchDef
+  %1 = load float* %f
+  ret float %1
 }

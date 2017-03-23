@@ -15,6 +15,7 @@
 
 #include "list.h"
 #include "ast.h"
+#include "irgen.h"
 
 class Decl;
 class VarDecl;
@@ -184,6 +185,8 @@ class Case : public SwitchLabel
     Case() : SwitchLabel() {}
     Case(Expr *label, Stmt *stmt) : SwitchLabel(label, stmt) {}
     const char *GetPrintNameForNode() { return "Case"; }
+    llvm::Value* getValue();
+    void Emit();
 };
 
 class Default : public SwitchLabel
@@ -191,6 +194,7 @@ class Default : public SwitchLabel
   public:
     Default(Stmt *stmt) : SwitchLabel(stmt) {}
     const char *GetPrintNameForNode() { return "Default"; }
+    void Emit();
 };
 
 class SwitchStmt : public Stmt

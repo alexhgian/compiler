@@ -291,6 +291,16 @@ void ReturnStmt::Emit(){
 
 }
 
+llvm::Value* Case::getValue(){
+    return label->getValue();
+}
+
+void Case::Emit(){
+    stmt->Emit();
+}
+void Default::Emit(){
+    stmt->Emit();
+}
 
 SwitchLabel::SwitchLabel(Expr *l, Stmt *s) {
     Assert(l != NULL && s != NULL);
@@ -335,12 +345,57 @@ void SwitchStmt::Emit(){
     int caseCount = 0;
 
     for (int i = 0; i < cases->NumElements(); i++) {
-      if (dynamic_cast<Case*>(cases->Nth(i)))
-        caseCount++;
+      if (dynamic_cast<Case*>(cases->Nth(i))) {
+          caseCount++;
+      }
     }
 
     llvm::SwitchInst *switchInst = llvm::SwitchInst::Create(expr->getValue(), defaultBB, caseCount, irgen.GetBasicBlock());
-    
+    symtab.push(); // create else scope
+
+    int customCaseNum = 0;
+
+    for (int i = 0; i < cases->NumElements(); i++) {
+        Case *caseStmt = dynamic_cast<Case*>(cases->Nth(i));
+        Default *defaultStmt = dynamic_cast<Default*>(cases->Nth(i));
+        if(caseStmt){
+            char switchCaseName[32];
+            sprintf (switchCaseName,"switchCase%d",customCaseNum);
+
+            llvm::BasicBlock *caseBB = irgen.createFunctionBlock(switchCaseName);
+            switchInst->addCase(llvm::cast<llvm::ConstantInt>(caseStmt->getValue()), caseBB);
+            customCaseNum++;
+
+            if (!irgen.GetBasicBlock()->getTerminator()) {
+                llvm::BranchInst::Create(caseBB, irgen.GetBasicBlock());
+            }
+
+            irgen.SetBasicBlock(caseBB);
+            caseStmt->Emit();
+        } else if (defaultStmt) {
+            if (!irgen.GetBasicBlock()->getTerminator()){
+                llvm::BranchInst::Create(defaultBB, irgen.GetBasicBlock());
+            }
+
+            defaultBB->moveAfter(irgen.GetBasicBlock());
+            irgen.SetBasicBlock(defaultBB);
+            defaultStmt->Emit();
+        } else {
+            if (!irgen.GetBasicBlock()->getTerminator()) {
+                cases->Nth(i)->Emit();
+            }
+        }
+    }
+
+    if (!defaultBB->getTerminator()) {
+        llvm::BranchInst::Create(exitBB, defaultBB);
+    }
+
+    symtab.pop(); // exist else scope
+
+    exitBB->moveAfter(irgen.GetBasicBlock());
+    irgen.SetBasicBlock(exitBB);
+
     irgen.popBreak();
 }
 
