@@ -143,12 +143,22 @@ void IRGenerator::popLoop() {
     breakStack.pop_back();
 }
 
+void IRGenerator::pushBreak( llvm::BasicBlock* bb) {
+    breakStack.push_back(bb);
+}
+
+void IRGenerator::popBreak() {
+    breakStack.pop_back();
+}
+
 llvm::BasicBlock* IRGenerator::getCurrentLoop(){
     return loopStack.back();
 }
 llvm::BasicBlock* IRGenerator::getCurrentBreak(){
     return breakStack.back();
 }
+
+
 
 void IRGenerator::createBreak(){
     IRGenerator &irgen = IRGenerator::getInstance();
