@@ -83,6 +83,12 @@ class FloatConstant: public Expr
     double value;
 
   public:
+      static llvm::Constant* toLLVMConstant(float val){
+          return llvm::ConstantFP::get(
+              IRGenerator::getInstance().getFloatType(),
+              val
+          );
+      }
     FloatConstant(yyltype loc, double val);
     const char *GetPrintNameForNode() { return "FloatConstant"; }
     void PrintChildren(int indentLevel);

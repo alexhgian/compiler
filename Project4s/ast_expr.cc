@@ -281,6 +281,32 @@ void ArithmeticExpr::Emit(){
     this->getValue();
 }
 
+llvm::Value* scalarToVector(llvm::Value *scalarVal, llvm::Value* vecTemplate){
+    IRGenerator &irgen = IRGenerator::getInstance();
+    if(!vecTemplate->getType()->isVectorTy() || scalarVal->getType()->isVectorTy()){
+        return scalarVal;
+    }
+
+    int numOfElements = vecTemplate->getType()->getVectorNumElements();
+
+    // create a zero vector
+    // std::vector<llvm::Constant*> zeroVals(numOfElements, FloatConstant::toLLVMConstant(0.0));
+    // llvm::Value *newVector = llvm::ConstantVector::get(zeroVals);
+    llvm::Value *newVector = llvm::UndefValue::get(vecTemplate->getType());
+    
+    for (int i = 0; i < numOfElements; ++i) {
+        newVector = llvm::InsertElementInst::Create(
+            newVector,
+            scalarVal,
+            IntConstant::toLLVMConstant(i),
+            "",
+            irgen.GetBasicBlock()
+        );
+    }
+
+   return newVector;
+}
+
 llvm::Value* ArithmeticExpr::getValue(){
     // fprintf(stderr, "ArithmeticExpr::getValue()\n");
     IRGenerator &irgen = IRGenerator::getInstance();
@@ -298,6 +324,9 @@ llvm::Value* ArithmeticExpr::getValue(){
     }
 
     bool isFloat = leftOp->getType()->isFloatTy();
+
+    leftOp = scalarToVector(leftOp, rightOp);
+    rightOp = scalarToVector(rightOp, leftOp);
 
     llvm::BinaryOperator::BinaryOps binOp = getBinaryOps(isFloat, op);
 
@@ -362,7 +391,7 @@ llvm::Value* AssignExpr::getValue(){
     llvm::Value *assignValue;
 
     if (op->IsOp("+=")){ // Handle basic assignment case: z += 2
-        fprintf(stderr, "AssignExpr op is `+=`\n");
+        // fprintf(stderr, "AssignExpr op is `+=`\n");
         // Create a new ArithmeticExpr to handle addition of the left variable expr with the right expr
         // Using custom Operator to perform addition operation
         // ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs)
@@ -413,7 +442,7 @@ llvm::Value* AssignExpr::getValue(){
         leftArray->storeValue(assignValue);
 
     } else if(leftField) {
-        fprintf(stderr, "AssignExpr leftField storing\n");
+        // fprintf(stderr, "AssignExpr leftField storing\n");
         leftField->storeValue(assignValue);
     } else {
         // fprintf(stderr, "AssignExpr storing\n");
@@ -539,7 +568,7 @@ llvm::Constant* getSwizzleIndex(char pos){
 }
 
 void FieldAccess::Emit(){
-    fprintf(stderr, "FieldAccess::getValue()\n");
+    // fprintf(stderr, "FieldAccess::getValue()\n");
     this->getValue();
 }
 
@@ -553,7 +582,7 @@ void FieldAccess::Emit(){
 // }
 
 llvm::Value* FieldAccess::getValue(){
-    fprintf(stderr, "FieldAccess::getValue() begin\n");
+    // fprintf(stderr, "FieldAccess::getValue() begin\n");
     IRGenerator &irgen = IRGenerator::getInstance();
     SymbolTable &symtab = SymbolTable::getInstance();
 
@@ -564,7 +593,7 @@ llvm::Value* FieldAccess::getValue(){
 
     std::vector<llvm::Constant*> idx;
     for(int i = 0; i < swizzle.length(); i++) {
-        fprintf(stderr, "FieldAccess::getValue() swizzle[%d] %c\n", i, swizzle[i]);
+        // fprintf(stderr, "FieldAccess::getValue() swizzle[%d] %c\n", i, swizzle[i]);
         idx.push_back(getSwizzleIndex(swizzle[i]));
     }
     // fprintf(stderr, "FieldAccess::swizzle %s %d\n",swizzle, std::strlen(swizzle));
@@ -573,20 +602,19 @@ llvm::Value* FieldAccess::getValue(){
     //
 
     if(swizzle.length() == 1) {
-        fprintf(stderr, "FieldAccess::getValue()  ExtractElementInst\n");
+        // fprintf(stderr, "FieldAccess::getValue()  ExtractElementInst\n");
         return llvm::ExtractElementInst::Create(loadedVec, getSwizzleIndex(swizzle[0]), "", irgen.GetBasicBlock());
     } else {
-        fprintf(stderr, "FieldAccess::getValue()  ShuffleVectorInst\n");
+        // fprintf(stderr, "FieldAccess::getValue()  ShuffleVectorInst\n");
         llvm::Value *maskVal = llvm::ConstantVector::get(idx);
         llvm::Value *emptyVector = llvm::UndefValue::get(loadedVec->getType());
         return new llvm::ShuffleVectorInst(loadedVec, loadedVec, maskVal, "", irgen.GetBasicBlock());
     }
 
-    return NULL;
 }
 
 void FieldAccess::storeValue(llvm::Value* val){
-    fprintf(stderr, "FieldAccess::storeValue() begin\n");
+    // fprintf(stderr, "FieldAccess::storeValue() begin\n");
     IRGenerator &irgen = IRGenerator::getInstance();
 
     VarExpr* vecExpr = dynamic_cast<VarExpr*>(base);
@@ -603,9 +631,9 @@ void FieldAccess::storeValue(llvm::Value* val){
         // Handles partials
         llvm::Value *ptr = NULL;
         ptr = loadedVec;
-        fprintf(stderr, "FieldAccess::storeValue() swizzle.length() > 1\n");
+        // fprintf(stderr, "FieldAccess::storeValue() swizzle.length() > 1\n");
         for(int i = 0; i < swizzle.length(); i++) {
-            fprintf(stderr, "FieldAccess::storeValue() swizzle[%d] %c\n", i, swizzle[i]);
+            // fprintf(stderr, "FieldAccess::storeValue() swizzle[%d] %c\n", i, swizzle[i]);
             llvm::Value* extractVal = llvm::ExtractElementInst::Create(val, getSwizzleIndex(swizzle[i]), "", irgen.GetBasicBlock());
             ptr = llvm::InsertElementInst::Create(ptr, extractVal, getSwizzleIndex(swizzle[i]), "", irgen.GetBasicBlock());
 
